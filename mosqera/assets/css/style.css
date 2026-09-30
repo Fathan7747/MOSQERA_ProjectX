@@ -1,0 +1,62 @@
+:root{--ink:#0e2a2f;--lapis:#1f5c8a;--mist:#f2f6f5;--brass:#c99a2e;--line:#d5e0de;--txt:#1b2b2e}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.65 'Plus Jakarta Sans',sans-serif;color:var(--txt);background:#fff}
+h1,h2,h3,.logo{font-family:'Amiri',serif;line-height:1.2}
+a{color:var(--lapis)}
+:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+.nav{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:14px 5vw;background:var(--ink);color:#fff}
+.logo{font-size:1.7rem;font-weight:700;color:#fff;text-decoration:none;letter-spacing:.06em}
+.nav nav{display:flex;align-items:center;gap:22px}
+.nav nav a,.dd-btn{color:#dbe7e5;text-decoration:none;font-size:.95rem;background:none;border:0;cursor:pointer;font-family:inherit}
+.nav nav a:hover,.nav nav a.on,.dd-btn.on,.dd-btn:hover{color:var(--brass)}
+.hi{font-size:.9rem;color:#dbe7e5}
+.btn{display:inline-block;background:var(--brass);color:var(--ink)!important;padding:10px 20px;border-radius:8px;font-weight:700;border:0;cursor:pointer;font-family:inherit;font-size:.95rem;text-decoration:none}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:#fff!important;border:1.5px solid #fff}
+.dd{position:relative}
+.dd-list{display:none;position:absolute;top:130%;right:0;min-width:150px;background:#fff;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.2);overflow:hidden}
+.dd.open .dd-list{display:block}
+.dd-list a{display:block;padding:10px 16px;color:var(--ink)!important}
+.dd-list a:hover{background:var(--mist)}
+.burger{display:none;background:none;border:1.5px solid #fff;color:#fff;padding:6px 12px;border-radius:6px}
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:5vw;align-items:center;padding:8vh 5vw;background:var(--ink);color:#fff}
+.hero h1{font-size:clamp(2.4rem,5vw,4rem);margin:0 0 16px}
+.hero p{max-width:52ch;color:#c5d6d3;font-size:1.1rem}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.arch{justify-self:center;width:min(320px,100%);aspect-ratio:3/4;border:2px solid var(--brass);border-radius:160px 160px 12px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(circle at 50% 0,rgba(201,154,46,.18),transparent 60%)}
+.arch span,.arch small{color:#c5d6d3}
+.arch strong{font-family:'Amiri',serif;font-size:2.4rem;color:var(--brass)}
+#next-count{font-size:2.6rem;font-weight:500;font-variant-numeric:tabular-nums;margin:6px 0}
+.sec{padding:9vh 5vw;max-width:1100px;margin:auto}
+.sec.alt{max-width:none;background:var(--mist)}
+.sec.alt>*{max-width:1100px;margin-left:auto;margin-right:auto}
+.sec h2{font-size:2.2rem;margin:0 0 16px;color:var(--ink)}
+.lead{font-size:1.15rem;max-width:65ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin-top:24px}
+.grid article{border-left:3px solid var(--brass);padding-left:18px}
+.grid h3{margin:0 0 6px;font-size:1.4rem;color:var(--ink)}
+.faq details{border-bottom:1px solid var(--line);padding:14px 0}
+.faq summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.faq p{margin:10px 0 0}
+.page{min-height:60vh}.narrow{max-width:460px}
+.news{padding:20px 0;border-bottom:1px solid var(--line)}
+.news time{font-size:.85rem;color:var(--lapis)}
+.news h3{margin:4px 0;font-size:1.5rem;color:var(--ink)}
+.tbl{width:100%;max-width:480px;border-collapse:collapse;margin-top:16px}
+.tbl th,.tbl td{padding:14px 16px;text-align:left;border-bottom:1px solid var(--line)}
+.tbl td{text-align:right;font-variant-numeric:tabular-nums}
+.tbl tr.now{background:var(--mist);box-shadow:inset 4px 0 var(--brass)}
+.form{display:grid;gap:16px;margin:16px 0}
+.form label{display:grid;gap:6px;font-weight:500}
+.form input{padding:11px 12px;border:1.5px solid var(--line);border-radius:8px;font:inherit}
+.err{background:#fdecea;color:#8a1f17;padding:10px 14px;border-radius:8px}
+.foot{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;padding:28px 5vw;background:var(--ink);color:#c5d6d3;font-size:.9rem}
+@media(max-width:800px){
+  .burger{display:block}
+  .nav{flex-wrap:wrap}
+  .nav nav{display:none;flex-direction:column;align-items:flex-start;width:100%;padding-top:12px}
+  .nav nav.open{display:flex}
+  .dd-list{position:static;box-shadow:none;background:transparent}
+  .dd-list a{color:#dbe7e5!important;padding:6px 12px}
+  .hero{grid-template-columns:1fr}
+}
