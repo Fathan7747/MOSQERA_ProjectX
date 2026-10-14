@@ -10,4 +10,3 @@
 </section>
 <script>window.JADWAL = <?= json_encode($j) ?>;</script>
 <?php require 'includes/footer.php'; ?>
-      

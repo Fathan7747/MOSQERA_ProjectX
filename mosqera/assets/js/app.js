@@ -1,9 +1,35 @@
 // Menu mobile & dropdown
 const burger = document.querySelector('.burger'), menu = document.getElementById('menu');
-burger.addEventListener('click', () => burger.setAttribute('aria-expanded', menu.classList.toggle('open')));
+if (burger && menu) {
+  burger.addEventListener('click', () => burger.setAttribute('aria-expanded', menu.classList.toggle('open')));
+}
 const dd = document.querySelector('.dd'), ddBtn = document.querySelector('.dd-btn');
-ddBtn.addEventListener('click', e => { e.stopPropagation(); ddBtn.setAttribute('aria-expanded', dd.classList.toggle('open')); });
-document.addEventListener('click', () => { dd.classList.remove('open'); ddBtn.setAttribute('aria-expanded', 'false'); });
+if (dd && ddBtn) {
+  ddBtn.addEventListener('click', e => { e.stopPropagation(); ddBtn.setAttribute('aria-expanded', dd.classList.toggle('open')); });
+  document.addEventListener('click', () => { dd.classList.remove('open'); ddBtn.setAttribute('aria-expanded', 'false'); });
+}
+
+// Hero Dropdown "Daftar Sebagai"
+const heroDd = document.querySelector('.hero-dd');
+if (heroDd) {
+  const heroDdBtn = heroDd.querySelector('.hero-dd-btn');
+  const heroMenu = heroDd.querySelector('.hero-dd-menu');
+  if (heroDdBtn && heroMenu) {
+    heroDdBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const isOpen = heroDd.classList.toggle('open');
+      heroMenu.style.display = isOpen ? 'block' : 'none';
+      heroDdBtn.setAttribute('aria-expanded', isOpen);
+    });
+    document.addEventListener('click', e => {
+      if (!heroDd.contains(e.target)) {
+        heroDd.classList.remove('open');
+        heroMenu.style.display = 'none';
+        heroDdBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+}
 
 // Hitung mundur sholat berikutnya
 const J = window.JADWAL || [];

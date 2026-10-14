@@ -5,7 +5,29 @@ CREATE TABLE users (
   nama VARCHAR(100) NOT NULL,
   email VARCHAR(120) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
-  role ENUM('admin','jamaah') DEFAULT 'jamaah',
+  role VARCHAR(30) DEFAULT 'jamaah',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS transaksi_kas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tanggal DATE NOT NULL,
+  jenis ENUM('masuk','keluar') NOT NULL,
+  kategori VARCHAR(100) NOT NULL,
+  judul VARCHAR(200) NOT NULL,
+  nominal DECIMAL(15,2) NOT NULL,
+  keterangan TEXT NULL,
+  dibuat_oleh VARCHAR(100) DEFAULT 'Bendahara',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS program_agenda (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nama_program VARCHAR(200) NOT NULL,
+  tanggal DATE NOT NULL,
+  target_anggaran DECIMAL(15,2) NOT NULL,
+  realisasi_anggaran DECIMAL(15,2) DEFAULT 0,
+  status ENUM('Direncanakan','Berjalan','Selesai') DEFAULT 'Direncanakan',
+  penanggung_jawab VARCHAR(100) NOT NULL,
+  keterangan TEXT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE berita (
