@@ -1,52 +1,90 @@
-// Menu mobile & dropdown
-const burger = document.querySelector('.burger'), menu = document.getElementById('menu');
-if (burger && menu) {
-  burger.addEventListener('click', () => burger.setAttribute('aria-expanded', menu.classList.toggle('open')));
-}
-const dd = document.querySelector('.dd'), ddBtn = document.querySelector('.dd-btn');
-if (dd && ddBtn) {
-  ddBtn.addEventListener('click', e => { e.stopPropagation(); ddBtn.setAttribute('aria-expanded', dd.classList.toggle('open')); });
-  document.addEventListener('click', () => { dd.classList.remove('open'); ddBtn.setAttribute('aria-expanded', 'false'); });
-}
+// MOSQERA - Hitung Mundur Sholat & Interaktivitas Web
+(function() {
+  const DEFAULT_JADWAL = [
+    { nama: 'Subuh', waktu: '04:42' },
+    { nama: 'Terbit', waktu: '05:58' },
+    { nama: 'Dzuhur', waktu: '12:03' },
+    { nama: 'Ashar', waktu: '15:18' },
+    { nama: 'Maghrib', waktu: '18:08' },
+    { nama: 'Isya', waktu: '19:18' }
+  ];
 
-// Hero Dropdown "Daftar Sebagai"
-const heroDd = document.querySelector('.hero-dd');
-if (heroDd) {
-  const heroDdBtn = heroDd.querySelector('.hero-dd-btn');
-  const heroMenu = heroDd.querySelector('.hero-dd-menu');
-  if (heroDdBtn && heroMenu) {
-    heroDdBtn.addEventListener('click', e => {
-      e.stopPropagation();
-      const isOpen = heroDd.classList.toggle('open');
-      heroMenu.style.display = isOpen ? 'block' : 'none';
-      heroDdBtn.setAttribute('aria-expanded', isOpen);
+  function getTodayAt(timeStr) {
+    const d = new Date();
+    if (!timeStr) return d;
+    const parts = timeStr.split(':');
+    d.setHours(parseInt(parts[0], 10) || 0, parseInt(parts[1], 10) || 0, 0, 0);
+    return d;
+  }
+
+  function formatDigit(n) {
+    return String(Math.max(0, n)).padStart(2, '0');
+  }
+
+  function updatePrayerCountdown() {
+    // Ambil jadwal dari window.JADWAL atau gunakan default jika kosong
+    let schedule = (window.JADWAL && Array.isArray(window.JADWAL) && window.JADWAL.length > 0)
+      ? window.JADWAL
+      : DEFAULT_JADWAL;
+
+    const now = new Date();
+
+    // Filter sholat fardhu berikutnya hari ini
+    let next = schedule.find(item => getTodayAt(item.waktu) > now);
+    let targetDate;
+
+    if (next) {
+      targetDate = getTodayAt(next.waktu);
+    } else {
+      // Jika seluruh jadwal hari ini sudah lewat (misal ba'da Isya), target adalah Subuh esok hari
+      next = schedule[0];
+      targetDate = getTodayAt(next.waktu);
+      targetDate.setDate(targetDate.getDate() + 1);
+    }
+
+    const diffSeconds = Math.max(0, Math.floor((targetDate.getTime() - now.getTime()) / 1000));
+    const hours = Math.floor(diffSeconds / 3600);
+    const mins = Math.floor((diffSeconds % 3600) / 60);
+    const secs = diffSeconds % 60;
+    const countStr = `${formatDigit(hours)}:${formatDigit(mins)}:${formatDigit(secs)}`;
+
+    // Perbarui teks di elemen DOM (mendukung berbagai variasi id)
+    ['next-prayer-name', 'next-name'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = next.nama;
     });
-    document.addEventListener('click', e => {
-      if (!heroDd.contains(e.target)) {
-        heroDd.classList.remove('open');
-        heroMenu.style.display = 'none';
-        heroDdBtn.setAttribute('aria-expanded', 'false');
+
+    ['next-prayer-time', 'next-time'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = 'Pukul ' + next.waktu + ' WIB';
+    });
+
+    ['next-prayer-count', 'next-count'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = countStr;
+    });
+
+    // Beri tanda aktif pada kotak daftar jadwal sholat
+    document.querySelectorAll('.prayer-time-box, .tbl tr').forEach(box => {
+      const pName = box.getAttribute('data-name') || box.getAttribute('data-t');
+      if (pName && next && (pName.toLowerCase() === next.nama.toLowerCase() || pName === next.waktu)) {
+        box.classList.add('active');
+        box.classList.add('now');
+      } else {
+        box.classList.remove('active');
+        box.classList.remove('now');
       }
     });
   }
-}
 
-// Hitung mundur sholat berikutnya
-const J = window.JADWAL || [];
-const at = t => { const [h, m] = t.split(':'); const d = new Date(); d.setHours(+h, +m, 0, 0); return d; };
-const pad = n => String(n).padStart(2, '0');
-function tick() {
-  if (!J.length) return;
-  const now = new Date();
-  let next = J.find(x => at(x.waktu) > now), target;
-  if (next) target = at(next.waktu);
-  else { next = J[0]; target = at(next.waktu); target.setDate(target.getDate() + 1); }
-  const s = Math.max(0, Math.floor((target - now) / 1000));
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  set('next-name', next.nama); set('next-time', 'pukul ' + next.waktu);
-  set('next-count', `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s % 3600 / 60))}:${pad(s % 60)}`);
-  document.querySelectorAll('.tbl tr').forEach(r => r.classList.toggle('now', r.dataset.t === next.waktu));
-}
-const today = document.getElementById('today');
-if (today) today.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-tick(); setInterval(tick, 1000);
+  // Jalankan segera dan set interval tiap detik
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      updatePrayerCountdown();
+      setInterval(updatePrayerCountdown, 1000);
+    });
+  } else {
+    updatePrayerCountdown();
+    setInterval(updatePrayerCountdown, 1000);
+  }
+})();

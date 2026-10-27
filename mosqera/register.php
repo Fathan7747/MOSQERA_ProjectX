@@ -1,59 +1,35 @@
 <?php
-$title = 'Daftar Akun';
+$title = 'Pendaftaran Akun Pengurus';
 $page = 'register';
 require_once 'config.php';
 
-$allowedRoles = [
-    'bendahara' => [
-        'nama' => 'Admin / Bendahara',
-        'sub'  => 'Input transaksi, verifikasi nota, kelola kategori dana & terbitkan laporan resmi.',
-        'num'  => '1',
-        'color'=> '#0e2a2f'
-    ],
-    'pengurus' => [
-        'nama' => 'Pengurus Masjid',
-        'sub'  => 'Memantau saldo kas real-time, mengelola program & agenda yang butuh anggaran.',
-        'num'  => '2',
-        'color'=> '#c99a2e'
-    ],
-    'jamaah' => [
-        'nama' => 'Jamaah (Publik)',
-        'sub'  => 'Melihat laporan keuangan terbuka, jadwal kegiatan & kajian masjid.',
-        'num'  => '3',
-        'color'=> '#0e2a2f'
-    ]
-];
-
-$role = $_GET['role'] ?? ($_POST['role'] ?? 'jamaah');
-if (!array_key_exists($role, $allowedRoles)) {
-    $role = 'jamaah';
-}
-
-$roleInfo = $allowedRoles[$role];
 $err = '';
+$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama = trim($_POST['nama'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $pw = $_POST['password'] ?? '';
-    $rolePost = trim($_POST['role'] ?? 'jamaah');
-    if (!array_key_exists($rolePost, $allowedRoles)) {
-        $rolePost = 'jamaah';
+    $role = trim($_POST['role'] ?? 'Operator/Remaja Masjid');
+
+    $validRoles = ['Ketua DKM', 'Bendahara', 'Operator/Remaja Masjid'];
+    if (!in_array($role, $validRoles)) {
+        $role = 'Operator/Remaja Masjid';
     }
 
     if ($nama === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $err = 'Mohon isi nama lengkap dan alamat email yang valid.';
+        $err = 'Mohon isi nama lengkap dan email yang valid.';
     } elseif (strlen($pw) < 6) {
         $err = 'Kata sandi minimal 6 karakter.';
     } else {
-        $c = $db->prepare("SELECT id FROM users WHERE email=?");
-        $c->execute([$email]);
-        if ($c->fetch()) {
+        $check = $db->prepare("SELECT id FROM users WHERE email=?");
+        $check->execute([$email]);
+        if ($check->fetch()) {
             $err = 'Email sudah terdaftar. Silakan langsung masuk.';
         } else {
             $ins = $db->prepare("INSERT INTO users (nama, email, password, role) VALUES (?,?,?,?)");
-            $ins->execute([$nama, $email, password_hash($pw, PASSWORD_DEFAULT), $rolePost]);
-            header('Location: login.php?role=' . urlencode($rolePost) . '&registered=1');
+            $ins->execute([$nama, $email, password_hash($pw, PASSWORD_DEFAULT), $role]);
+            header('Location: login.php?registered=1');
             exit;
         }
     }
@@ -62,49 +38,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 require 'includes/header.php';
 ?>
 
-<section class="sec page narrow">
-  <div style="text-align:center; margin-bottom: 24px;">
-    <h2>Daftar Akun Baru</h2>
-    <p class="text-muted">Pilih peran akun yang sesuai sebelum mengisi formulir:</p>
+<div class="page-container" style="max-width:540px; padding-top:40px;">
+  
+  <div style="text-align:center; margin-bottom:28px;">
+    <span class="page-badge">Registrasi Pengurus</span>
+    <h1 style="font-size:2.2rem; color:var(--primary); margin:8px 0 6px;">Daftar Akun Pengurus</h1>
+    <p style="color:var(--text-muted); font-size:0.95rem; margin:0;">
+      Daftarkan akun DKM, Bendahara, atau Remaja Masjid untuk mengelola sistem.
+    </p>
   </div>
 
-  <!-- Role Selector Radio Cards (Spacious & Clean) -->
-  <div class="role-card-selector">
-    <?php foreach ($allowedRoles as $k => $r): ?>
-      <a href="register.php?role=<?= $k ?>" class="role-select-box <?= $role===$k ? 'active' : '' ?>">
-        <span class="role-select-num" style="background:<?= $r['color'] ?>;"><?= $r['num'] ?></span>
-        <div class="role-select-text">
-          <strong><?= e($r['nama']) ?></strong>
-          <small><?= e($r['sub']) ?></small>
-        </div>
-        <span class="role-select-check"><?= $role===$k ? '✓' : '' ?></span>
-      </a>
-    <?php endforeach; ?>
+  <?php if ($err): ?>
+    <div class="alert alert-error"><?= e($err) ?></div>
+  <?php endif; ?>
+
+  <div class="card" style="padding:32px 28px;">
+    <form method="post">
+      <div class="form-group">
+        <label class="form-label">Nama Lengkap & Gelar</label>
+        <input type="text" name="nama" class="form-input" placeholder="Contoh: H. Ahmad Fauzi" value="<?= e($_POST['nama'] ?? '') ?>" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Alamat Email</label>
+        <input type="email" name="email" class="form-input" placeholder="nama@email.com" value="<?= e($_POST['email'] ?? '') ?>" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Peran / Tanggung Jawab di Masjid</label>
+        <select name="role" class="form-select" required>
+          <option value="Bendahara">Bendahara (Kelola Buku Kas & Keuangan)</option>
+          <option value="Ketua DKM">Ketua DKM (Pengawasan & Kebijakan Masjid)</option>
+          <option value="Operator/Remaja Masjid">Operator / Remaja Masjid (Input Kegiatan, Jadwal & TPA)</option>
+        </select>
+        <span class="form-help">Pilih peran sesuai amanah yang diemban di kepengurusan masjid.</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Kata Sandi (Minimal 6 karakter)</label>
+        <input type="password" name="password" class="form-input" minlength="6" placeholder="Buat kata sandi aman" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%; padding:14px; font-size:1.05rem; font-weight:700; margin-top:8px;">
+        Daftar Akun Pengurus
+      </button>
+    </form>
+
+    <div style="text-align:center; margin-top:20px; font-size:0.92rem;">
+      Sudah memiliki akun pengurus? <a href="login.php" style="font-weight:700; color:var(--primary);">Masuk di sini</a>
+    </div>
   </div>
 
-  <?php if ($err): ?><p class="err"><?= e($err) ?></p><?php endif; ?>
-
-  <form method="post" class="form">
-    <input type="hidden" name="role" value="<?= e($role) ?>">
-    
-    <label>Nama Lengkap
-      <input type="text" name="nama" placeholder="Contoh: Fathur Rahman" value="<?= e($_POST['nama'] ?? '') ?>" required>
-    </label>
-
-    <label>Email
-      <input type="email" name="email" placeholder="nama@email.com" value="<?= e($_POST['email'] ?? '') ?>" required>
-    </label>
-
-    <label>Kata Sandi (minimal 6 karakter)
-      <input type="password" name="password" minlength="6" placeholder="••••••••" required>
-    </label>
-
-    <button class="btn" style="width:100%; margin-top:12px; padding:12px;">Daftar sebagai <?= e($roleInfo['nama']) ?></button>
-  </form>
-
-  <p style="text-align:center; margin-top:20px; font-size:0.95rem;">
-    Sudah punya akun? <a href="login.php?role=<?= urlencode($role) ?>"><strong>Masuk di sini</strong></a>
-  </p>
-</section>
+</div>
 
 <?php require 'includes/footer.php'; ?>

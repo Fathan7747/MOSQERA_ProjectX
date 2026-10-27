@@ -1,14 +1,22 @@
-<?php $title='Berita'; $page='berita'; require 'includes/header.php';
-$list = $db->query("SELECT * FROM berita ORDER BY tanggal DESC, id DESC")->fetchAll(); ?>
-<section class="sec page">
-  <h2>Berita</h2>
-  <?php if (!$list): ?><p>Belum ada berita. Data akan tampil di sini setelah ditambahkan.</p><?php endif; ?>
-  <?php foreach ($list as $b): ?>
-    <article class="news">
-      <time><?= date('d M Y', strtotime($b['tanggal'])) ?></time>
-      <h3><?= e($b['judul']) ?></h3>
-      <p><?= nl2br(e($b['isi'])) ?></p>
-    </article>
-  <?php endforeach; ?>
-</section>
+<?php
+$title = 'Berita & Informasi';
+$page = 'kegiatan';
+require_once 'config.php';
+require 'includes/header.php';
+?>
+<div class="page-container">
+  <div class="page-header-row">
+    <div>
+      <span class="page-badge">Informasi Masjid</span>
+      <h1 class="page-title">Berita & Informasi Masjid</h1>
+      <p class="page-lead">Pengumuman penting dan warta kegiatan terkini.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <p style="color:var(--text-muted); margin:0;">
+      Untuk jadwal shalat fardhu, agenda khatib sholat Jumat, dan kajian mingguan, silakan kunjungi halaman <a href="kegiatan.php" style="font-weight:700; color:var(--primary);">Jadwal & Informasi Kegiatan</a>.
+    </p>
+  </div>
+</div>
 <?php require 'includes/footer.php'; ?>
