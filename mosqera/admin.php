@@ -156,11 +156,11 @@ $kasBulan = ringkasan_kas_bulan($db);
 
 $statDonasiTotal = (float)$db->query("SELECT COALESCE(SUM(nominal),0) FROM donasi_masuk WHERE status='Terverifikasi'")->fetchColumn();
 
-$namaMasjid = pengaturan($db, 'nama_masjid', "Masjid Jami' As-Salam");
-$alamatMasjid = pengaturan($db, 'alamat', "Jl. Silaturahmi Raya No. 45");
+$namaMasjid = pengaturan($db, 'nama_masjid', "Masjid Baiturrahim");
+$alamatMasjid = pengaturan($db, 'alamat', "Jl. Jend. Sudirman No.70, Rembiga, Kec. Selaparang, Kota Mataram");
 $teleponMasjid = pengaturan($db, 'telepon', "0812-3456-7890");
 $emailMasjid = pengaturan($db, 'email', "sekretariat@mosqera.id");
-$bankInfo = pengaturan($db, 'bank_info', "Bank Syariah Indonesia (BSI) No. Rekening: 7123-456-789 a.n Kas DKM Masjid Jami As-Salam");
+$bankInfo = pengaturan($db, 'bank_info', "Bank Syariah Indonesia (BSI) No. Rekening: 7123-456-789 a.n Kas DKM Masjid Baiturrahim");
 $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NMID: ID1029384756)");
 ?>
 <!DOCTYPE html>
@@ -171,7 +171,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
   <title>Portal Pengurus · MOSQERA - <?= e($namaMasjid) ?></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/style.css?v=<?= file_exists(__DIR__ . '/assets/css/style.css') ? filemtime(__DIR__ . '/assets/css/style.css') : time() ?>">
 </head>
 <body style="background:#f4f7f6;">
@@ -179,14 +179,22 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
 <!-- Header Portal Pengurus (Senior Friendly: Jelas & Kontras) -->
 <header class="admin-navbar no-print">
   <div class="admin-nav-container">
-    <div style="display:flex; align-items:center; gap:16px;">
+    <div class="admin-brand-box">
       <a class="admin-brand" href="admin.php">MOSQERA</a>
-      <span style="opacity:0.75; font-size:0.88rem;">| <?= e($namaMasjid) ?></span>
+      <span class="admin-brand-divider"></span>
+      <span class="admin-brand-masjid"><?= e($namaMasjid) ?></span>
     </div>
 
     <div class="admin-user-info">
-      <span><strong>Selamat Datang!</strong> <strong><?= e($user['nama']) ?></strong></span>
-      <a href="logout.php" class="admin-btn-logout">Keluar</a>
+      <span style="opacity:0.92;">Selamat Datang, <strong><?= e($user['nama']) ?></strong></span>
+      <a href="index.php" style="color:#ffffff; opacity:0.85; font-size:0.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:5px; padding:6px 12px; border:1px solid rgba(255,255,255,0.25); border-radius:var(--radius-sm); transition:all 0.15s ease;" title="Buka Halaman Depan Masjid">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        <span>Lihat Web</span>
+      </a>
+      <a href="logout.php" class="admin-btn-logout">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        <span>Keluar</span>
+      </a>
     </div>
   </div>
 </header>
@@ -194,11 +202,26 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
 <!-- Tab Navigasi Admin Sesuai Sitemap -->
 <nav class="admin-nav-tabs no-print">
   <div class="admin-nav-tabs-inner">
-    <a href="admin.php?tab=dasbor" class="admin-tab-item <?= $tab==='dasbor'?'active':'' ?>">Dasbor Utama</a>
-    <a href="admin.php?tab=kas" class="admin-tab-item <?= $tab==='kas'?'active':'' ?>">Buku Kas Masjid</a>
-    <a href="admin.php?tab=donasi" class="admin-tab-item <?= $tab==='donasi'?'active':'' ?>">Manajemen ZISWAF & Donasi</a>
-    <a href="admin.php?tab=jadwal" class="admin-tab-item <?= $tab==='jadwal'?'active':'' ?>">Manajemen Jadwal & Kajian</a>
-    <a href="admin.php?tab=pengaturan" class="admin-tab-item <?= $tab==='pengaturan'?'active':'' ?>">Pengaturan Sistem</a>
+    <a href="admin.php?tab=dasbor" class="admin-tab-item <?= $tab==='dasbor'?'active':'' ?>">
+      <svg class="admin-tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      <span>Dasbor Utama</span>
+    </a>
+    <a href="admin.php?tab=kas" class="admin-tab-item <?= $tab==='kas'?'active':'' ?>">
+      <svg class="admin-tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
+      <span>Buku Kas Masjid</span>
+    </a>
+    <a href="admin.php?tab=donasi" class="admin-tab-item <?= $tab==='donasi'?'active':'' ?>">
+      <svg class="admin-tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+      <span>Manajemen ZISWAF & Donasi</span>
+    </a>
+    <a href="admin.php?tab=jadwal" class="admin-tab-item <?= $tab==='jadwal'?'active':'' ?>">
+      <svg class="admin-tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span>Manajemen Jadwal & Kajian</span>
+    </a>
+    <a href="admin.php?tab=pengaturan" class="admin-tab-item <?= $tab==='pengaturan'?'active':'' ?>">
+      <svg class="admin-tab-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <span>Pengaturan Sistem</span>
+    </a>
   </div>
 </nav>
 
@@ -407,7 +430,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
       <?php if ($aksiForm === 'masuk'): ?>
         <!-- FORM CATAT UANG MASUK -->
         <h3 style="font-size:1.3rem; margin-bottom:16px; color:var(--success);">Catat Uang Masuk Baru</h3>
-        <form method="post">
+        <form method="post" data-confirm="Simpan catatan uang masuk ini ke dalam buku kas masjid?" data-confirm-title="Simpan Uang Masuk" data-confirm-btn="Simpan" data-confirm-type="success">
           <input type="hidden" name="action" value="tambah_uang_masuk">
 
           <div class="form-row">
@@ -453,7 +476,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
       <?php else: ?>
         <!-- FORM CATAT UANG KELUAR -->
         <h3 style="font-size:1.3rem; margin-bottom:16px; color:var(--danger);">Catat Uang Keluar Baru</h3>
-        <form method="post">
+        <form method="post" data-confirm="Catat pengeluaran kas ini? Pastikan bukti belanja fisik sudah diverifikasi." data-confirm-title="Catat Uang Keluar" data-confirm-btn="Simpan" data-confirm-type="danger">
           <input type="hidden" name="action" value="catat_uang_keluar">
 
           <div class="form-row">
@@ -551,7 +574,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
                   </td>
                   <td style="font-size:0.82rem; color:var(--text-muted);"><?= e($row['dibuat_oleh']) ?></td>
                   <td class="no-print">
-                    <form method="post" onsubmit="return confirm('Hapus catatan transaksi ini?');" style="display:inline;">
+                    <form method="post" style="display:inline;" data-confirm="Apakah Anda yakin ingin menghapus catatan transaksi ini? Data yang dihapus tidak dapat dipulihkan." data-confirm-title="Hapus Catatan Kas" data-confirm-btn="Hapus" data-confirm-type="danger">
                       <input type="hidden" name="action" value="hapus_transaksi">
                       <input type="hidden" name="id" value="<?= $row['id'] ?>">
                       <button type="submit" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.85rem; font-weight:600; text-decoration:underline;">Hapus</button>
@@ -583,7 +606,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
     <!-- BUAT KAMPANYE BARU (MICRO-TARGETING) -->
     <div class="card">
       <h3 style="font-size:1.25rem; margin-bottom:16px;">Buat Kampanye Kebaikan Baru</h3>
-      <form method="post">
+      <form method="post" data-confirm="Terbitkan program kampanye donasi baru ini ke publik?" data-confirm-title="Terbitkan Kampanye" data-confirm-btn="Simpan" data-confirm-type="primary">
         <input type="hidden" name="action" value="buat_kampanye">
 
         <div class="form-row">
@@ -698,7 +721,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
                   </td>
                   <td>
                     <?php if ($d['status'] === 'Menunggu'): ?>
-                      <form method="post" style="display:inline;">
+                      <form method="post" style="display:inline;" data-confirm="Verifikasi penerimaan dana donasi sebesar <?= rupiah($d['nominal']) ?> ini?" data-confirm-title="Verifikasi Donasi" data-confirm-btn="Verifikasi" data-confirm-type="primary">
                         <input type="hidden" name="action" value="verifikasi_donasi">
                         <input type="hidden" name="donasi_id" value="<?= $d['id'] ?>">
                         <input type="hidden" name="status" value="Terverifikasi">
@@ -733,7 +756,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
     <!-- FORM INPUT JADWAL KHATIB & KAJIAN -->
     <div class="card">
       <h3 style="font-size:1.25rem; margin-bottom:16px;">Input Jadwal Shalat Jumat / Kajian</h3>
-      <form method="post">
+      <form method="post" data-confirm="Simpan dan publikasikan jadwal kegiatan masjid ini?" data-confirm-title="Simpan Jadwal Kegiatan" data-confirm-btn="Simpan" data-confirm-type="primary">
         <input type="hidden" name="action" value="tambah_kegiatan">
 
         <div class="form-row">
@@ -812,7 +835,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
                   <td><?= e($k['judul']) ?></td>
                   <td><?= e($k['waktu']) ?> (<?= e($k['lokasi']) ?>)</td>
                   <td>
-                    <form method="post" onsubmit="return confirm('Hapus jadwal ini?');" style="display:inline;">
+                    <form method="post" style="display:inline;" data-confirm="Apakah Anda yakin ingin menghapus jadwal kegiatan ini dari agenda masjid?" data-confirm-title="Hapus Jadwal Kegiatan" data-confirm-btn="Hapus" data-confirm-type="danger">
                       <input type="hidden" name="action" value="hapus_kegiatan">
                       <input type="hidden" name="id" value="<?= $k['id'] ?>">
                       <button type="submit" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.85rem; text-decoration:underline;">Hapus</button>
@@ -845,7 +868,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
       <!-- FORM PROFIL & QRIS MASJID -->
       <div class="card">
         <h3 style="font-size:1.25rem; margin-bottom:16px;">Profil & Kontak Masjid</h3>
-        <form method="post">
+        <form method="post" data-confirm="Simpan perubahan profil dan informasi rekening resmi masjid?" data-confirm-title="Simpan Pengaturan Masjid" data-confirm-btn="Simpan" data-confirm-type="primary">
           <input type="hidden" name="action" value="simpan_pengaturan">
 
           <div class="form-group">

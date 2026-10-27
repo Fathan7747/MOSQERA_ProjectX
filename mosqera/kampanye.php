@@ -60,7 +60,7 @@ if (!$selectedKampanye && count($kampanyeList) > 0) {
 // Donasi Terkini untuk Transparansi
 $donasiTerbaru = $db->query("SELECT d.*, k.judul as nama_proyek FROM donasi_masuk d LEFT JOIN kampanye_donasi k ON d.kampanye_id = k.id ORDER BY d.id DESC LIMIT 8")->fetchAll();
 
-$bankInfo = pengaturan($db, 'bank_info', 'Bank Syariah Indonesia (BSI) No. Rekening: 7123-456-789 a.n Kas DKM Masjid Jami As-Salam');
+$bankInfo = pengaturan($db, 'bank_info', 'Bank Syariah Indonesia (BSI) No. Rekening: 7123-456-789 a.n Kas DKM Masjid Baiturrahim');
 $qrisLabel = pengaturan($db, 'qris_label', 'QRIS Standar Pembayaran Nasional (NMID: ID1029384756)');
 
 require 'includes/header.php';
@@ -135,7 +135,7 @@ require 'includes/header.php';
     <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:36px;" class="form-row">
       
       <!-- Sisi Kiri: Form Input -->
-      <form method="post">
+      <form method="post" data-confirm="Lanjutkan komitmen donasi kebaikan ini untuk program masjid?" data-confirm-title="Konfirmasi Donasi" data-confirm-btn="Lanjutkan" data-confirm-type="primary">
         <input type="hidden" name="action" value="donasi_online">
         <input type="hidden" name="kampanye_id" value="<?= $selectedKampanye ? $selectedKampanye['id'] : 0 ?>">
 

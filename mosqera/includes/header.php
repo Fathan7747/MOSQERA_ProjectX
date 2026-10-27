@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../config.php';
 $page = $page ?? 'beranda';
-$namaMasjid = pengaturan($db, 'nama_masjid', "Masjid Jami' As-Salam");
+$namaMasjid = pengaturan($db, 'nama_masjid', "Masjid Baiturrahim");
 ?>
 <!DOCTYPE html>
 <html lang="id">

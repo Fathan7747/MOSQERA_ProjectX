@@ -14,8 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($nama === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $err = 'Mohon isi nama lengkap dan email yang valid.';
-    } elseif (strlen($pw) < 6) {
-        $err = 'Kata sandi minimal 6 karakter.';
+    } elseif (strlen($pw) < 8) {
+        $err = 'Kata sandi minimal 8 karakter.';
     } else {
         $check = $db->prepare("SELECT id FROM users WHERE email=?");
         $check->execute([$email]);
@@ -48,7 +48,7 @@ require 'includes/header.php';
   <?php endif; ?>
 
   <div class="card" style="padding:32px 28px;">
-    <form method="post">
+    <form method="post" data-confirm="Kirim formulir pendaftaran akun pengurus baru ini?" data-confirm-title="Pendaftaran Pengurus Baru" data-confirm-btn="Kirim" data-confirm-type="primary">
       <div class="form-group">
         <label class="form-label">Nama Lengkap & Gelar</label>
         <input type="text" name="nama" class="form-input" placeholder="Contoh: H. Ahmad Fauzi" value="<?= e($_POST['nama'] ?? '') ?>" required>
@@ -60,8 +60,8 @@ require 'includes/header.php';
       </div>
 
       <div class="form-group">
-        <label class="form-label">Kata Sandi (Minimal 6 karakter)</label>
-        <input type="password" name="password" class="form-input" minlength="6" placeholder="Buat kata sandi aman" required>
+        <label class="form-label">Kata Sandi (Minimal 8 karakter)</label>
+        <input type="password" name="password" class="form-input" minlength="8" placeholder="Buat kata sandi minimal 8 karakter" required>
       </div>
 
       <button type="submit" class="btn btn-primary" style="width:100%; padding:14px; font-size:1.05rem; font-weight:700; margin-top:8px;">

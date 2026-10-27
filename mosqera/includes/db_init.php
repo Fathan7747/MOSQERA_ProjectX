@@ -146,7 +146,7 @@ try {
     if ($countTPA == 0) {
         $db->exec("INSERT INTO pendaftaran_tpa (nama_santri, umur, jenis_kelamin, nama_wali, no_kontak, alamat, kelas_pilihan, status) VALUES
         ('Muhammad Al-Fatih', 7, 'Laki-laki', 'Fauzan Hidayat', '081298765432', 'Jl. Kenanga No. 12', 'Iqro Awal', 'Diterima'),
-        ('Aisyah Nur Ramadhani', 8, 'Perempuan', 'Budi Santoso', '085712345678', 'Kompleks As-Salam Blok C No. 4', 'Al-Qur\'an Tajwid', 'Diterima'),
+        ('Aisyah Nur Ramadhani', 8, 'Perempuan', 'Budi Santoso', '085712345678', 'Kompleks Baiturrahim Blok C No. 4', 'Al-Qur\'an Tajwid', 'Diterima'),
         ('Zaid bin Tsabit', 6, 'Laki-laki', 'Rudi Hermawan', '082188776655', 'Jl. Melati RT 03/05', 'Iqro Awal', 'Menunggu Verifikasi')");
     }
 
@@ -159,11 +159,11 @@ try {
     $countPengaturan = $db->query("SELECT COUNT(*) FROM pengaturan_masjid")->fetchColumn();
     if ($countPengaturan == 0) {
         $db->exec("INSERT INTO pengaturan_masjid (kunci, nilai) VALUES
-        ('nama_masjid', 'Masjid Jami\' As-Salam'),
-        ('alamat', 'Jl. Silaturahmi Raya No. 45, Kompleks Baitul Maqdis'),
+        ('nama_masjid', 'Masjid Baiturrahim'),
+        ('alamat', 'Jl. Jend. Sudirman No.70, Rembiga, Kec. Selaparang, Kota Mataram'),
         ('telepon', '0812-3456-7890'),
         ('email', 'sekretariat@mosqera.id'),
-        ('bank_info', 'Bank Syariah Indonesia (BSI) No. Rekening: 7123-456-789 a.n Kas DKM Masjid Jami As-Salam'),
+        ('bank_info', 'Bank Syariah Indonesia (BSI) No. Rekening: 7123-456-789 a.n Kas DKM Masjid Baiturrahim'),
         ('qris_label', 'QRIS Standar Pembayaran Nasional (NMID: ID1029384756)'),
         ('kota_jadwal', 'Jakarta Selatan')");
     }

@@ -31,8 +31,8 @@ $daftarTransaksi = $stmt->fetchAll();
 $arusKategoriMasuk = $db->query("SELECT kategori, SUM(nominal) as total FROM transaksi_kas WHERE jenis='masuk' GROUP BY kategori")->fetchAll();
 $arusKategoriKeluar = $db->query("SELECT kategori, SUM(nominal) as total FROM transaksi_kas WHERE jenis='keluar' GROUP BY kategori")->fetchAll();
 
-$namaMasjid = pengaturan($db, 'nama_masjid', "Masjid Jami' As-Salam");
-$alamatMasjid = pengaturan($db, 'alamat', "Jl. Silaturahmi Raya No. 45");
+$namaMasjid = pengaturan($db, 'nama_masjid', "Masjid Baiturrahim");
+$alamatMasjid = pengaturan($db, 'alamat', "Jl. Jend. Sudirman No.70, Rembiga, Kec. Selaparang, Kota Mataram");
 
 require 'includes/header.php';
 ?>

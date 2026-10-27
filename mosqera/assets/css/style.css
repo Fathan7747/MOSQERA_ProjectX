@@ -763,12 +763,14 @@ p {
 .admin-navbar {
   background: var(--primary);
   color: #ffffff;
-  padding: 14px 24px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .admin-nav-container {
-  max-width: 1240px;
+  max-width: 1180px;
   margin: 0 auto;
+  padding: 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -776,12 +778,45 @@ p {
   flex-wrap: wrap;
 }
 
+.admin-brand-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
 .admin-brand {
-  font-family: 'Amiri', serif;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 800;
   color: #ffffff;
   text-decoration: none;
+  letter-spacing: 0.06em;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.admin-brand:hover {
+  color: #ffffff;
+  opacity: 0.92;
+}
+
+.admin-brand-divider {
+  display: inline-block;
+  width: 1.5px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 2px;
+}
+
+.admin-brand-masjid {
+  font-size: 0.96rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 0.01em;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .admin-user-info {
@@ -802,6 +837,7 @@ p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   padding: 6px 16px;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.28);
@@ -823,30 +859,59 @@ p {
 .admin-nav-tabs {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 0 24px;
+  box-shadow: 0 2px 5px rgba(15, 58, 52, 0.03);
 }
 
 .admin-nav-tabs-inner {
-  max-width: 1240px;
+  max-width: 1180px;
   margin: 0 auto;
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
 }
 
 .admin-tab-item {
-  padding: 14px 4px;
-  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 8px;
+  font-size: 0.93rem;
   font-weight: 600;
   color: var(--text-muted);
   text-decoration: none;
   border-bottom: 3px solid transparent;
   white-space: nowrap;
+  transition: all 0.2s ease;
+  border-radius: 6px 6px 0 0;
+  text-align: center;
 }
 
-.admin-tab-item.active, .admin-tab-item:hover {
+.admin-tab-item:hover {
+  color: var(--primary);
+  background: rgba(15, 58, 52, 0.035);
+}
+
+.admin-tab-item.active {
   color: var(--primary);
   border-bottom-color: var(--primary);
+  background: rgba(15, 58, 52, 0.05);
+  font-weight: 700;
+}
+
+.admin-tab-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  stroke: currentColor;
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.admin-tab-item:hover .admin-tab-icon,
+.admin-tab-item.active .admin-tab-icon {
+  opacity: 1;
 }
 
 /* ==========================================================================
@@ -974,5 +1039,541 @@ p {
   }
   .quick-action-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 992px) {
+  .admin-nav-tabs-inner {
+    display: flex;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .admin-nav-tabs-inner::-webkit-scrollbar {
+    display: none;
+  }
+  .admin-tab-item {
+    flex: 0 0 auto;
+    padding: 12px 18px;
+  }
+}
+
+/* ==========================================================================
+   UI/UX Enhancement: Modal Konfirmasi Modern & Interaktif
+   ========================================================================== */
+.mosqera-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 58, 52, 0.52);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.mosqera-modal-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.mosqera-modal-dialog {
+  background: var(--surface);
+  border-radius: 18px;
+  padding: 32px 28px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(15, 58, 52, 0.28);
+  border: 1px solid rgba(15, 58, 52, 0.08);
+  text-align: center;
+  transform: scale(0.92) translateY(14px);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+}
+
+.mosqera-modal-backdrop.is-open .mosqera-modal-dialog {
+  transform: scale(1) translateY(0);
+}
+
+.mosqera-modal-icon-wrapper {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.mosqera-modal-backdrop.is-open .mosqera-modal-icon-wrapper {
+  transform: scale(1.05);
+}
+
+.mosqera-modal-icon-wrapper.danger {
+  background: #fdf2f2;
+  color: var(--danger);
+  border: 2px solid #f8d7da;
+}
+
+.mosqera-modal-icon-wrapper.warning {
+  background: #fef9ed;
+  color: #b88a28;
+  border: 2px solid #f9e9c5;
+}
+
+.mosqera-modal-icon-wrapper.primary {
+  background: var(--primary-subtle);
+  color: var(--primary);
+  border: 2px solid #cce5e0;
+}
+
+.mosqera-modal-icon-wrapper.success {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 2px solid #bfe4cf;
+}
+
+.mosqera-modal-title {
+  font-family: 'Amiri', serif;
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 8px;
+  line-height: 1.25;
+}
+
+.mosqera-modal-desc {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0 0 26px;
+}
+
+.mosqera-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mosqera-modal-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 20px;
+  font-size: 0.96rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mosqera-modal-btn:active {
+  transform: scale(0.98);
+}
+
+.mosqera-modal-btn-cancel {
+  background: #f1f5f4;
+  color: var(--text-main);
+  border-color: var(--border);
+}
+
+.mosqera-modal-btn-cancel:hover {
+  background: #e4ebe9;
+  border-color: #cbd7d4;
+}
+
+.mosqera-modal-btn-confirm.danger {
+  background: var(--danger);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(176, 42, 55, 0.25);
+}
+
+.mosqera-modal-btn-confirm.danger:hover {
+  background: #96222e;
+}
+
+.mosqera-modal-btn-confirm.warning {
+  background: #b88a28;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(184, 138, 40, 0.25);
+}
+
+.mosqera-modal-btn-confirm.warning:hover {
+  background: #9d7520;
+}
+
+.mosqera-modal-btn-confirm.primary {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(15, 58, 52, 0.25);
+}
+
+.mosqera-modal-btn-confirm.primary:hover {
+  background: var(--primary-light);
+}
+
+.mosqera-modal-btn-confirm.success {
+  background: var(--success);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(25, 135, 84, 0.25);
+}
+
+.mosqera-modal-btn-confirm.success:hover {
+  background: #157347;
+}
+
+/* ==========================================================================
+   UI/UX Enhancement: Toast Notifikasi Melayang
+   ========================================================================== */
+.mosqera-toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+  width: calc(100% - 48px);
+  pointer-events: none;
+}
+
+.mosqera-toast {
+  pointer-events: auto;
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  box-shadow: 0 10px 30px rgba(15, 58, 52, 0.15);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  animation: toastSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: all 0.25s ease;
+}
+
+.mosqera-toast.is-hiding {
+  animation: toastSlideOut 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.mosqera-toast.success {
+  border-left: 5px solid var(--success);
+}
+
+.mosqera-toast.error {
+  border-left: 5px solid var(--danger);
+}
+
+.mosqera-toast.info {
+  border-left: 5px solid var(--primary);
+}
+
+.mosqera-toast-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.mosqera-toast.success .mosqera-toast-icon {
+  color: var(--success);
+}
+
+.mosqera-toast.error .mosqera-toast-icon {
+  color: var(--danger);
+}
+
+.mosqera-toast.info .mosqera-toast-icon {
+  color: var(--primary);
+}
+
+.mosqera-toast-content {
+  flex: 1;
+}
+
+.mosqera-toast-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+
+.mosqera-toast-message {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.mosqera-toast-close {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 1.25rem;
+  line-height: 1;
+  border-radius: 4px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.mosqera-toast-close:hover {
+  color: var(--text-main);
+  background: var(--bg);
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(60px) scale(0.95);
+  }
+}
+
+/* ==========================================================================
+   UI/UX Enhancement: Indikator Loading & Animasi Halus
+   ========================================================================== */
+.mosqera-spin {
+  animation: mosqeraSpin 0.9s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@keyframes mosqeraSpin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Efek Hover & Transisi Kartu & Tombol */
+.card {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 24px rgba(15, 58, 52, 0.07);
+}
+
+.btn {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 58, 52, 0.12);
+}
+
+.btn:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+.btn.is-submitting {
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3.5px rgba(15, 58, 52, 0.12) !important;
+}
+
+.prayer-time-box {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.prayer-time-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(15, 58, 52, 0.08);
+  border-color: var(--primary);
+}
+
+.prayer-time-box.active {
+  border-color: var(--accent) !important;
+  box-shadow: 0 4px 16px rgba(184, 138, 40, 0.25) !important;
+  animation: prayerPulse 3s ease-in-out infinite;
+}
+
+@keyframes prayerPulse {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(184, 138, 40, 0.2);
+  }
+  50% {
+    box-shadow: 0 6px 24px rgba(184, 138, 40, 0.4);
+  }
+}
+
+/* Animasi In-Page Alert */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: alertFadeIn 0.3s ease forwards;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+
+@keyframes alertFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* ==========================================================================
+   UI/UX Enhancement: Sistem Animasi Scroll Reveal Modern & Halus
+   ========================================================================== */
+
+/* Base state: Hanya aktif jika JavaScript telah siap (.js-reveal-ready) */
+html.js-reveal-ready .reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+html.js-reveal-ready .reveal.is-revealed {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+/* Variasi Reveal Skala Halus (Cocok untuk Card Statistik / Widget / Box Hero) */
+html.js-reveal-ready .reveal-scale {
+  opacity: 0;
+  transform: scale(0.96) translateY(16px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+html.js-reveal-ready .reveal-scale.is-revealed {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+/* Variasi Reveal Slide Kiri (Untuk Header Halaman & Judul Section) */
+html.js-reveal-ready .reveal-left {
+  opacity: 0;
+  transform: translateX(-24px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+html.js-reveal-ready .reveal-left.is-revealed {
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+}
+
+/* Fallback stagger transition delays jika diatur langsung via class */
+.reveal-stagger > *:nth-child(1) { transition-delay: 0.04s; }
+.reveal-stagger > *:nth-child(2) { transition-delay: 0.12s; }
+.reveal-stagger > *:nth-child(3) { transition-delay: 0.20s; }
+.reveal-stagger > *:nth-child(4) { transition-delay: 0.28s; }
+.reveal-stagger > *:nth-child(5) { transition-delay: 0.36s; }
+.reveal-stagger > *:nth-child(6) { transition-delay: 0.44s; }
+.reveal-stagger > *:nth-child(7) { transition-delay: 0.52s; }
+.reveal-stagger > *:nth-child(8) { transition-delay: 0.60s; }
+
+/* Animasi Progress Bar / Grafik Batang saat Ter-reveal */
+html.js-reveal-ready .reveal:not(.is-revealed) .progress-bar-fill,
+html.js-reveal-ready .reveal:not(.is-revealed) .progress-fill {
+  width: 0% !important;
+}
+
+.progress-bar-fill,
+.progress-fill {
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1) 0.22s !important;
+}
+
+/* Interaksi Hover Halus Tetap Bekerja Maksimal setelah Elemen Ter-reveal */
+.card.is-revealed:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 26px rgba(15, 58, 52, 0.09);
+}
+
+.cash-widget.is-revealed:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(15, 58, 52, 0.1);
+}
+
+.campaign-card.is-revealed:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(15, 58, 52, 0.12);
+}
+
+.prayer-time-box.is-revealed:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(15, 58, 52, 0.08);
+}
+
+/* Responsif di Layar Ponsel & Tablet */
+@media (max-width: 768px) {
+  html.js-reveal-ready .reveal {
+    transform: translateY(16px);
+    transition-duration: 0.5s;
+  }
+  html.js-reveal-ready .reveal-scale {
+    transform: scale(0.98) translateY(12px);
+    transition-duration: 0.5s;
+  }
+}
+
+/* Aksesibilitas: Hormati preferensi pengguna untuk reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  html.js-reveal-ready .reveal,
+  html.js-reveal-ready .reveal-scale,
+  html.js-reveal-ready .reveal-left {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .progress-bar-fill,
+  .progress-fill {
+    transition: none !important;
+  }
+}
+
+/* Keamanan Cetak & Mading: Pastikan dokumen cetak tidak transparan atau terpotong */
+@media print {
+  html.js-reveal-ready .reveal,
+  html.js-reveal-ready .reveal-scale,
+  html.js-reveal-ready .reveal-left,
+  .reveal,
+  .is-revealed {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }
