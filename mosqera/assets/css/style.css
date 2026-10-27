@@ -64,15 +64,15 @@ p {
 }
 
 /* ==========================================================================
-   Header Navigasi Publik
+   Header Navigasi Publik (Warna Hijau Selaras dengan Portal Pengurus #0f3a34)
    ========================================================================== */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  background: var(--primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 10px rgba(15, 58, 52, 0.18);
 }
 
 .site-header .nav-container {
@@ -96,7 +96,7 @@ p {
   font-family: 'Amiri', serif;
   font-size: 1.65rem;
   font-weight: 700;
-  color: var(--primary);
+  color: #ffffff;
   letter-spacing: 0.04em;
   line-height: 1;
 }
@@ -105,7 +105,7 @@ p {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--accent);
+  color: #d1e7dd;
   font-weight: 600;
   margin-top: 2px;
 }
@@ -121,19 +121,19 @@ p {
   border-radius: var(--radius-sm);
   font-size: 0.95rem;
   font-weight: 500;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.88);
   transition: all 0.15s ease;
 }
 
 .nav-link:hover {
-  color: var(--primary);
-  background: var(--primary-subtle);
+  color: #ffffff;
+  background: transparent;
 }
 
 .nav-link.active {
-  color: var(--primary);
+  color: #ffffff;
   font-weight: 700;
-  background: var(--primary-subtle);
+  background: transparent;
 }
 
 .btn-login-header {
@@ -141,29 +141,30 @@ p {
   align-items: center;
   gap: 8px;
   padding: 9px 18px;
-  border: 1.5px solid var(--primary);
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--radius-sm);
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--primary);
-  background: transparent;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
   transition: all 0.15s ease;
 }
 
 .btn-login-header:hover {
-  background: var(--primary);
-  color: #fff;
+  background: #ffffff;
+  color: var(--primary);
+  border-color: #ffffff;
 }
 
 .nav-burger {
   display: none;
-  background: transparent;
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   font-size: 0.9rem;
   cursor: pointer;
-  color: var(--text-main);
+  color: #ffffff;
 }
 
 /* ==========================================================================
@@ -787,7 +788,7 @@ p {
   display: flex;
   align-items: center;
   gap: 16px;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
 }
 
 .admin-user-badge {
@@ -795,6 +796,28 @@ p {
   padding: 4px 10px;
   border-radius: 4px;
   font-weight: 600;
+}
+
+.admin-btn-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius-sm);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  letter-spacing: 0.02em;
+}
+
+.admin-btn-logout:hover {
+  background: #b02a37;
+  border-color: #b02a37;
+  color: #ffffff;
 }
 
 .admin-nav-tabs {
@@ -849,13 +872,14 @@ p {
 }
 
 /* ==========================================================================
-   Footer
+   Footer (Warna Hijau Selaras dengan Header & Portal Pengurus #0f3a34)
    ========================================================================== */
 .site-footer {
-  background: #ffffff;
-  border-top: 1px solid var(--border);
+  background: var(--primary);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   padding: 40px 24px 30px;
   margin-top: 48px;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .footer-inner {
@@ -867,7 +891,24 @@ p {
   flex-wrap: wrap;
   gap: 20px;
   font-size: 0.9rem;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.footer-inner strong {
+  color: #ffffff !important;
+}
+
+.footer-inner p {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.footer-inner small,
+.footer-inner span {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.footer-inner a {
+  color: #d1e7dd;
 }
 
 /* ==========================================================================
@@ -920,8 +961,8 @@ p {
     top: 72px;
     left: 0;
     right: 0;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
+    background: var(--primary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     padding: 16px 24px;
     box-shadow: var(--shadow-md);
   }

@@ -11,7 +11,7 @@ $kasTotal = ringkasan_kas($db);
 $kampanyeList = $db->query("SELECT * FROM kampanye_donasi WHERE status='Aktif' ORDER BY id DESC LIMIT 3")->fetchAll();
 
 // Jadwal Kegiatan & Sholat Jumat Terdekat
-$kegiatanList = $db->query("SELECT * FROM jadwal_kegiatan WHERE tanggal >= CURDATE() - INTERVAL 1 DAY ORDER BY tanggal ASC LIMIT 2")->fetchAll();
+$kegiatanList = $db->query("SELECT * FROM jadwal_kegiatan WHERE tanggal >= CURDATE() - INTERVAL 1 DAY ORDER BY tanggal ASC LIMIT 4")->fetchAll();
 
 // Hitung sholat berikutnya langsung di PHP agar langsung tampil tanpa menunggu JS
 $currentTime = date('H:i');
@@ -157,47 +157,31 @@ require 'includes/header.php';
     </div>
   </section>
 
-  <!-- 4. Sorotan Kegiatan & Pendidikan TPA -->
-  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:24px; margin-top:24px;">
-    <!-- Kegiatan & Sholat Jumat -->
-    <div class="card">
-      <div class="card-header">
-        <h3 style="font-size:1.25rem;">Agenda Khatib & Kajian</h3>
-        <a href="kegiatan.php" style="font-size:0.85rem; font-weight:600;">Lihat Kalender &rarr;</a>
+  <!-- 4. Sorotan Kegiatan Khatib & Kajian -->
+  <section class="card" style="margin-top:36px;">
+    <div class="card-header">
+      <div>
+        <h3 style="font-size:1.25rem; margin-bottom:4px;">Agenda Khatib & Kajian Masjid</h3>
+        <span style="font-size:0.85rem; color:var(--text-muted);">Jadwal penceramah Sholat Jumat dan kajian keislaman rutin.</span>
       </div>
-      
-      <?php if (!$kegiatanList): ?>
-        <p style="color:var(--text-muted); font-size:0.9rem;">Belum ada jadwal kegiatan terdaftar pekan ini.</p>
-      <?php else: ?>
-        <div style="display:flex; flex-direction:column; gap:16px;">
-          <?php foreach ($kegiatanList as $keg): ?>
-            <div style="border-left:3px solid var(--accent); padding-left:14px;">
-              <span class="badge-tag" style="background:var(--primary-subtle); color:var(--primary); margin-bottom:4px;"><?= e($keg['jenis']) ?></span>
-              <strong style="display:block; font-size:1.02rem; color:var(--text-main); margin-bottom:2px;"><?= e($keg['judul']) ?></strong>
-              <small style="display:block; color:var(--primary); font-weight:600;"><?= e($keg['penceramah']) ?></small>
-              <small style="color:var(--text-muted);"><?= date('d M Y', strtotime($keg['tanggal'])) ?> · <?= e($keg['waktu']) ?> · <?= e($keg['lokasi']) ?></small>
-            </div>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
+      <a href="kegiatan.php" class="btn btn-secondary" style="font-size:0.85rem; padding:6px 14px;">Lihat Kalender Lengkap &rarr;</a>
     </div>
-
-    <!-- Pendidikan Santri TPA -->
-    <div class="card">
-      <div class="card-header">
-        <h3 style="font-size:1.25rem;">Pendidikan Santri TPA</h3>
-        <a href="tpa.php" style="font-size:0.85rem; font-weight:600;">Info Lengkap &rarr;</a>
+    
+    <?php if (!$kegiatanList): ?>
+      <p style="color:var(--text-muted); font-size:0.9rem; padding:12px 0;">Belum ada jadwal kegiatan terdaftar pekan ini.</p>
+    <?php else: ?>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; margin-top:12px;">
+        <?php foreach ($kegiatanList as $keg): ?>
+          <div style="border-left:3px solid var(--accent); padding:12px 16px; background:var(--bg); border-radius:0 var(--radius-sm) var(--radius-sm) 0;">
+            <span class="badge-tag" style="background:var(--primary-subtle); color:var(--primary); margin-bottom:6px;"><?= e($keg['jenis']) ?></span>
+            <strong style="display:block; font-size:1.02rem; color:var(--text-main); margin-bottom:3px;"><?= e($keg['judul']) ?></strong>
+            <small style="display:block; color:var(--primary); font-weight:600;"><?= e($keg['penceramah']) ?></small>
+            <small style="color:var(--text-muted); display:block; margin-top:2px;"><?= date('d M Y', strtotime($keg['tanggal'])) ?> · <?= e($keg['waktu']) ?> · <?= e($keg['lokasi']) ?></small>
+          </div>
+        <?php endforeach; ?>
       </div>
-      <p style="font-size:0.92rem; color:var(--text-muted); margin-bottom:18px;">
-        TPA Masjid membuka pendaftaran santri baru untuk kelas Iqro awal, tahsin, dan hafalan juz 'amma. Belajar dibimbing asatidz berkompeten dalam lingkungan masjid yang ramah anak.
-      </p>
-      <div style="background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px; margin-bottom:18px;">
-        <span style="font-size:0.85rem; font-weight:700; color:var(--primary); display:block; margin-bottom:4px;">Pendaftaran Santri Baru Dibuka</span>
-        <span style="font-size:0.82rem; color:var(--text-muted);">Pendaftaran dapat dilakukan secara mandiri oleh orang tua/wali santri secara online.</span>
-      </div>
-      <a href="tpa.php#daftar" class="btn btn-secondary" style="width:100%;">Daftar Santri Baru Online</a>
-    </div>
-  </div>
+    <?php endif; ?>
+  </section>
 
 </div>
 

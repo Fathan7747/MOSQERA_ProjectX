@@ -10,12 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama = trim($_POST['nama'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $pw = $_POST['password'] ?? '';
-    $role = trim($_POST['role'] ?? 'Operator/Remaja Masjid');
-
-    $validRoles = ['Ketua DKM', 'Bendahara', 'Operator/Remaja Masjid'];
-    if (!in_array($role, $validRoles)) {
-        $role = 'Operator/Remaja Masjid';
-    }
+    $role = 'Pengurus';
 
     if ($nama === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $err = 'Mohon isi nama lengkap dan email yang valid.';
@@ -44,7 +39,7 @@ require 'includes/header.php';
     <span class="page-badge">Registrasi Pengurus</span>
     <h1 style="font-size:2.2rem; color:var(--primary); margin:8px 0 6px;">Daftar Akun Pengurus</h1>
     <p style="color:var(--text-muted); font-size:0.95rem; margin:0;">
-      Daftarkan akun DKM, Bendahara, atau Remaja Masjid untuk mengelola sistem.
+      Daftarkan akun Pengurus Masjid untuk mengelola pembukuan dan sistem MOSQERA.
     </p>
   </div>
 
@@ -62,16 +57,6 @@ require 'includes/header.php';
       <div class="form-group">
         <label class="form-label">Alamat Email</label>
         <input type="email" name="email" class="form-input" placeholder="nama@email.com" value="<?= e($_POST['email'] ?? '') ?>" required>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Peran / Tanggung Jawab di Masjid</label>
-        <select name="role" class="form-select" required>
-          <option value="Bendahara">Bendahara (Kelola Buku Kas & Keuangan)</option>
-          <option value="Ketua DKM">Ketua DKM (Pengawasan & Kebijakan Masjid)</option>
-          <option value="Operator/Remaja Masjid">Operator / Remaja Masjid (Input Kegiatan, Jadwal & TPA)</option>
-        </select>
-        <span class="form-help">Pilih peran sesuai amanah yang diemban di kepengurusan masjid.</span>
       </div>
 
       <div class="form-group">

@@ -26,11 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($u && password_verify($password, $u['password'])) {
         session_regenerate_id(true);
+        $rolePengurus = (strtolower($u['role'] ?? '') === 'jamaah') ? 'jamaah' : 'Pengurus';
         $_SESSION['user'] = [
             'id'    => $u['id'],
             'nama'  => $u['nama'],
             'email' => $u['email'],
-            'role'  => $u['role']
+            'role'  => $rolePengurus
         ];
         header('Location: admin.php');
         exit;
@@ -45,10 +46,9 @@ require 'includes/header.php';
 <div class="page-container" style="max-width:520px; padding-top:48px;">
   
   <div style="text-align:center; margin-bottom:28px;">
-    <span class="page-badge">Otentikasi Pengurus</span>
     <h1 style="font-size:2.2rem; color:var(--primary); margin:8px 0 6px;">Masuk ke Portal Pengurus</h1>
     <p style="color:var(--text-muted); font-size:0.95rem; margin:0;">
-      Akses DKM, Bendahara, dan Remaja Masjid dengan tampilan ramah lansia.
+      Akses pengelolaan sistem informasi dan keuangan masjid MOSQERA.
     </p>
   </div>
 
@@ -76,16 +76,7 @@ require 'includes/header.php';
       </button>
     </form>
 
-    <!-- Akun Pengurus Cepat untuk Kemudahan Login -->
-    <div style="margin-top:24px; padding:14px; background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md); font-size:0.85rem;">
-      <span style="font-weight:700; color:var(--primary); display:block; margin-bottom:4px;">Akun Pengurus Bawaan (Default):</span>
-      <div style="color:var(--text-muted); line-height:1.6;">
-        Email: <strong>bendahara@mosqera.id</strong> (atau <strong>ketua@mosqera.id</strong>)<br>
-        Kata Sandi: <strong>password123</strong>
-      </div>
-    </div>
-
-    <div style="text-align:center; margin-top:20px; font-size:0.92rem;">
+    <div style="text-align:center; margin-top:24px; font-size:0.92rem;">
       Belum memiliki akun pengurus? <a href="register.php" style="font-weight:700; color:var(--primary);">Daftar Pengurus Baru</a>
     </div>
   </div>

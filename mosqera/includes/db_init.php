@@ -7,7 +7,7 @@ try {
         nama VARCHAR(150) NOT NULL,
         email VARCHAR(150) UNIQUE NOT NULL,
         password VARCHAR(255) NOT NULL,
-        role VARCHAR(50) DEFAULT 'Operator/Remaja Masjid',
+        role VARCHAR(50) DEFAULT 'Pengurus',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) CHARACTER SET utf8mb4");
 
@@ -16,9 +16,8 @@ try {
     if ($userCount == 0) {
         $pwDefault = password_hash('password123', PASSWORD_DEFAULT);
         $insUser = $db->prepare("INSERT INTO users (nama, email, password, role) VALUES (?,?,?,?)");
-        $insUser->execute(['H. Ahmad Fauzi (Bendahara)', 'bendahara@mosqera.id', $pwDefault, 'Bendahara']);
-        $insUser->execute(['Drs. H. M. Syarif (Ketua DKM)', 'ketua@mosqera.id', $pwDefault, 'Ketua DKM']);
-        $insUser->execute(['Fikri Ramadhan (Remaja Masjid)', 'remaja@mosqera.id', $pwDefault, 'Operator/Remaja Masjid']);
+        $insUser->execute(['Pengurus DKM Masjid', 'pengurus@mosqera.id', $pwDefault, 'Pengurus']);
+        $insUser->execute(['H. Ahmad Fauzi', 'bendahara@mosqera.id', $pwDefault, 'Pengurus']);
     }
 
     // 2. Tabel jadwal_sholat

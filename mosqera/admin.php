@@ -10,7 +10,15 @@ if (empty($_SESSION['user'])) {
 }
 
 $user = $_SESSION['user'];
+if (strtolower($user['role'] ?? '') !== 'jamaah') {
+    $user['role'] = 'Pengurus';
+    $_SESSION['user']['role'] = 'Pengurus';
+}
 $tab = $_GET['tab'] ?? 'dasbor';
+if ($tab === 'tpa') {
+    header('Location: admin.php?tab=dasbor');
+    exit;
+}
 $sub = $_GET['sub'] ?? '';
 
 $msg = '';
@@ -126,21 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // ==========================================
-// 4. HANDLER ADMINISTRASI TPA
-// ==========================================
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_santri') {
-    $idSantri = intval($_POST['santri_id'] ?? 0);
-    $statusSantri = trim($_POST['status'] ?? 'Diterima');
-    $kelasSantri = trim($_POST['kelas_pilihan'] ?? 'Iqro Awal');
-    if ($idSantri > 0) {
-        $upd = $db->prepare("UPDATE pendaftaran_tpa SET status=?, kelas_pilihan=? WHERE id=?");
-        $upd->execute([$statusSantri, $kelasSantri, $idSantri]);
-        $msg = 'Status santri berhasil diperbarui.';
-    }
-}
-
-// ==========================================
-// 5. HANDLER PENGATURAN SISTEM
+// 4. HANDLER PENGATURAN SISTEM
 // ==========================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'simpan_pengaturan') {
     $keys = ['nama_masjid', 'alamat', 'telepon', 'email', 'bank_info', 'qris_label'];
@@ -161,8 +155,6 @@ $kas = ringkasan_kas($db);
 $kasBulan = ringkasan_kas_bulan($db);
 
 $statDonasiTotal = (float)$db->query("SELECT COALESCE(SUM(nominal),0) FROM donasi_masuk WHERE status='Terverifikasi'")->fetchColumn();
-$countSantriAktif = (int)$db->query("SELECT COUNT(*) FROM pendaftaran_tpa WHERE status='Diterima' OR status='Aktif'")->fetchColumn();
-$countSantriPending = (int)$db->query("SELECT COUNT(*) FROM pendaftaran_tpa WHERE status='Menunggu Verifikasi'")->fetchColumn();
 
 $namaMasjid = pengaturan($db, 'nama_masjid', "Masjid Jami' As-Salam");
 $alamatMasjid = pengaturan($db, 'alamat', "Jl. Silaturahmi Raya No. 45");
@@ -188,15 +180,13 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
 <header class="admin-navbar no-print">
   <div class="admin-nav-container">
     <div style="display:flex; align-items:center; gap:16px;">
-      <a class="admin-brand" href="admin.php">MOSQERA Pengurus</a>
+      <a class="admin-brand" href="admin.php">MOSQERA</a>
       <span style="opacity:0.75; font-size:0.88rem;">| <?= e($namaMasjid) ?></span>
     </div>
 
     <div class="admin-user-info">
-      <span>Pengguna: <strong><?= e($user['nama']) ?></strong></span>
-      <span class="admin-user-badge"><?= e($user['role']) ?></span>
-      <a href="index.php" target="_blank" style="color:#ffffff; font-weight:600; text-decoration:underline;">Lihat Web Publik</a>
-      <a href="logout.php" style="color:#ffb8b8; font-weight:600; margin-left:8px;">Keluar</a>
+      <span><strong>Selamat Datang!</strong> <strong><?= e($user['nama']) ?></strong></span>
+      <a href="logout.php" class="admin-btn-logout">Keluar</a>
     </div>
   </div>
 </header>
@@ -208,7 +198,6 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
     <a href="admin.php?tab=kas" class="admin-tab-item <?= $tab==='kas'?'active':'' ?>">Buku Kas Masjid</a>
     <a href="admin.php?tab=donasi" class="admin-tab-item <?= $tab==='donasi'?'active':'' ?>">Manajemen ZISWAF & Donasi</a>
     <a href="admin.php?tab=jadwal" class="admin-tab-item <?= $tab==='jadwal'?'active':'' ?>">Manajemen Jadwal & Kajian</a>
-    <a href="admin.php?tab=tpa" class="admin-tab-item <?= $tab==='tpa'?'active':'' ?>">Administrasi TPA</a>
     <a href="admin.php?tab=pengaturan" class="admin-tab-item <?= $tab==='pengaturan'?'active':'' ?>">Pengaturan Sistem</a>
   </div>
 </nav>
@@ -260,9 +249,9 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
       </div>
 
       <div class="cash-widget keluar">
-        <span class="cash-widget-title">Pendidikan TPA Masjid</span>
-        <strong class="cash-widget-amount"><?= $countSantriAktif ?> Santri</strong>
-        <p class="cash-widget-desc"><?= $countSantriPending ?> pendaftaran baru menunggu verifikasi.</p>
+        <span class="cash-widget-title">Pengeluaran Kas (Bulan Ini)</span>
+        <strong class="cash-widget-amount"><?= rupiah($kasBulan['keluar_bulan']) ?></strong>
+        <p class="cash-widget-desc">Total realisasi belanja operasional dan bantuan bulan berjalan.</p>
       </div>
     </div>
 
@@ -838,80 +827,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
     </div>
 
   <!-- ====================================================================
-       TAB 5: ADMINISTRASI TPA
-       ==================================================================== -->
-  <?php elseif ($tab === 'tpa'): 
-    $santriList = $db->query("SELECT * FROM pendaftaran_tpa ORDER BY id DESC")->fetchAll();
-  ?>
-
-    <div class="page-header-row">
-      <div>
-        <h2 style="font-size:1.8rem; margin:0 0 4px;">Manajemen Administrasi TPA</h2>
-        <p class="page-lead">Verifikasi pendaftaran santri baru, pembagian kelas, dan pemantauan santri aktif.</p>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <h3 style="font-size:1.25rem;">Daftar Santri & Verifikasi Pendaftaran Baru</h3>
-          <span style="font-size:0.85rem; color:var(--text-muted);">Kelola status calon santri dan pembagian kelas Iqro / Al-Qur'an.</span>
-        </div>
-      </div>
-
-      <div class="table-responsive">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Tgl Daftar</th>
-              <th>Nama Calon Santri</th>
-              <th>Usia & JK</th>
-              <th>Nama Orang Tua / Wali</th>
-              <th>Kontak WhatsApp</th>
-              <th>Kelas Pilihan</th>
-              <th>Status</th>
-              <th>Tindakan Pengurus</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php if (!$santriList): ?>
-              <tr><td colspan="8" style="text-align:center; padding:20px;">Belum ada pendaftaran santri masuk.</td></tr>
-            <?php else: ?>
-              <?php foreach ($santriList as $s): ?>
-                <tr>
-                  <td><?= date('d/m/Y', strtotime($s['tanggal_daftar'])) ?></td>
-                  <td><strong><?= e($s['nama_santri']) ?></strong></td>
-                  <td><?= $s['umur'] ?> th (<?= e($s['jenis_kelamin']) ?>)</td>
-                  <td><?= e($s['nama_wali']) ?></td>
-                  <td><a href="https://wa.me/<?= preg_replace('/[^0-9]/', '', $s['no_kontak']) ?>" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:underline;"><?= e($s['no_kontak']) ?></a></td>
-                  <td><?= e($s['kelas_pilihan']) ?></td>
-                  <td>
-                    <span class="badge-tag <?= ($s['status']==='Diterima'||$s['status']==='Aktif') ? 'badge-masuk' : 'badge-keluar' ?>">
-                      <?= e($s['status']) ?>
-                    </span>
-                  </td>
-                  <td>
-                    <form method="post" style="display:flex; gap:6px; align-items:center;">
-                      <input type="hidden" name="action" value="update_santri">
-                      <input type="hidden" name="santri_id" value="<?= $s['id'] ?>">
-                      <select name="status" class="form-select" style="padding:4px 8px; font-size:0.8rem; width:auto;">
-                        <option value="Diterima" <?= $s['status']==='Diterima'?'selected':'' ?>>Diterima</option>
-                        <option value="Aktif" <?= $s['status']==='Aktif'?'selected':'' ?>>Aktif</option>
-                        <option value="Menunggu Verifikasi" <?= $s['status']==='Menunggu Verifikasi'?'selected':'' ?>>Menunggu</option>
-                      </select>
-                      <button type="submit" class="btn btn-secondary" style="padding:4px 8px; font-size:0.8rem;">Update</button>
-                    </form>
-                  </td>
-                </tr>
-              <?php endforeach; ?>
-            <?php endif; ?>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-  <!-- ====================================================================
-       TAB 6: PENGATURAN SISTEM
+       TAB 5: PENGATURAN SISTEM
        ==================================================================== -->
   <?php elseif ($tab === 'pengaturan'): 
     $userList = $db->query("SELECT id, nama, email, role, created_at FROM users ORDER BY id ASC")->fetchAll();
@@ -968,7 +884,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
         </form>
       </div>
 
-      <!-- KELOLA AKUN PENGGUNA (ROLE: KETUA DKM, BENDAHARA, OPERATOR) -->
+      <!-- KELOLA AKUN PENGGUNA (ROLE: PENGURUS) -->
       <div class="card">
         <h3 style="font-size:1.25rem; margin-bottom:16px;">Akun Pengurus Masjid</h3>
         <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:14px;">
@@ -1005,11 +921,11 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
 <footer class="site-footer no-print">
   <div class="footer-inner">
     <div>
-      <strong style="color:var(--primary);"><?= e($namaMasjid) ?> · Portal Pengurus</strong>
-      <p style="margin:2px 0 0;"><?= e($alamatMasjid) ?></p>
+      <strong style="color:#ffffff; font-size:1.05rem;"><?= e($namaMasjid) ?> · Portal Pengurus</strong>
+      <p style="margin:2px 0 0; color:rgba(255,255,255,0.85);"><?= e($alamatMasjid) ?></p>
     </div>
     <div style="text-align:right;">
-      <span>MOSQERA - Tata Kelola Kas Masjid Terbuka & Ramah Lansia</span>
+      <span style="color:rgba(255,255,255,0.75);">MOSQERA - Tata Kelola Kas Masjid Terbuka & Ramah Lansia</span>
     </div>
   </div>
 </footer>

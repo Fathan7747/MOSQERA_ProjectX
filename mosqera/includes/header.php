@@ -16,7 +16,7 @@ $namaMasjid = pengaturan($db, 'nama_masjid', "Masjid Jami' As-Salam");
 </head>
 <body>
 
-<header class="admin-brand">
+<header class="site-header">
   <div class="nav-container">
     <a class="brand-logo" href="index.php">
       <span class="brand-title">MOSQERA</span>
@@ -32,13 +32,12 @@ $namaMasjid = pengaturan($db, 'nama_masjid', "Masjid Jami' As-Salam");
       <a href="transparansi.php" class="nav-link <?= ($page==='transparansi' || $page==='kas') ? 'active' : '' ?>">Transparansi Kas</a>
       <a href="kampanye.php" class="nav-link <?= $page==='kampanye' ? 'active' : '' ?>">Kampanye Kebaikan</a>
       <a href="kegiatan.php" class="nav-link <?= in_array($page, ['kegiatan', 'jadwal']) ? 'active' : '' ?>">Jadwal & Kegiatan</a>
-      <a href="tpa.php" class="nav-link <?= $page==='tpa' ? 'active' : '' ?>">Pendidikan TPA</a>
 
       <?php if (!empty($_SESSION['user'])): ?>
-        <a href="admin.php" class="btn btn-primary" style="padding:8px 16px; font-size:0.88rem;">Panel Pengurus</a>
-        <a href="logout.php" class="nav-link" style="color:var(--danger); font-size:0.88rem;">Keluar</a>
+        <a href="admin.php" class="btn" style="background:#ffffff; color:var(--primary); font-weight:700; padding:8px 16px; font-size:0.88rem; border-radius:var(--radius-sm);">Panel Pengurus</a>
+        <a href="logout.php" class="admin-btn-logout" style="margin-left:4px;">Keluar</a>
       <?php else: ?>
-        <a href="login.php" class="btn-login-header">Portal Pengurus</a>
+        <a href="login.php" class="btn-login-header">Login Pengurus</a>
       <?php endif; ?>
     </nav>
   </div>
