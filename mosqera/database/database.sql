@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS `transaksi_kas` (
   `judul` VARCHAR(200) NOT NULL,
   `nominal` DECIMAL(15,2) NOT NULL,
   `keterangan` TEXT NULL,
+  `bukti_file` VARCHAR(255) NULL,
   `dibuat_oleh` VARCHAR(100) DEFAULT 'Bendahara',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -69,6 +70,7 @@ CREATE TABLE IF NOT EXISTS `donasi_masuk` (
   `nominal` DECIMAL(15,2) NOT NULL,
   `metode` VARCHAR(50) NOT NULL,
   `catatan_doa` TEXT NULL,
+  `bukti_file` VARCHAR(255) NULL,
   `tanggal` DATE NOT NULL,
   `status` ENUM('Menunggu Verifikasi','Terverifikasi','Ditolak') DEFAULT 'Menunggu Verifikasi',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP

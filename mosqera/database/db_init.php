@@ -52,10 +52,18 @@ try {
         judul VARCHAR(200) NOT NULL,
         nominal DECIMAL(15,2) NOT NULL,
         keterangan TEXT NULL,
-        bukti_nota VARCHAR(255) NULL,
+        bukti_file VARCHAR(255) NULL,
         dibuat_oleh VARCHAR(100) DEFAULT 'Bendahara',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) CHARACTER SET utf8mb4");
+
+    // Pastikan kolom bukti_file ada jika tabel sebelumnya dibuat tanpa bukti_file
+    try {
+        $colCheckKas = $db->query("SHOW COLUMNS FROM transaksi_kas LIKE 'bukti_file'")->fetch();
+        if (!$colCheckKas) {
+            $db->exec("ALTER TABLE transaksi_kas ADD COLUMN bukti_file VARCHAR(255) NULL AFTER keterangan");
+        }
+    } catch (Exception $e) {}
 
     $countKas = $db->query("SELECT COUNT(*) FROM transaksi_kas")->fetchColumn();
     if ($countKas == 0) {
@@ -98,10 +106,19 @@ try {
         nominal DECIMAL(15,2) NOT NULL,
         metode ENUM('QRIS', 'Transfer Bank', 'Tunai') DEFAULT 'QRIS',
         catatan_doa TEXT NULL,
+        bukti_file VARCHAR(255) NULL,
         status ENUM('Terverifikasi', 'Menunggu') DEFAULT 'Terverifikasi',
         tanggal DATE NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) CHARACTER SET utf8mb4");
+
+    // Pastikan kolom bukti_file ada jika tabel sebelumnya dibuat tanpa bukti_file
+    try {
+        $colCheckDonasi = $db->query("SHOW COLUMNS FROM donasi_masuk LIKE 'bukti_file'")->fetch();
+        if (!$colCheckDonasi) {
+            $db->exec("ALTER TABLE donasi_masuk ADD COLUMN bukti_file VARCHAR(255) NULL AFTER catatan_doa");
+        }
+    } catch (Exception $e) {}
 
     $countDonasi = $db->query("SELECT COUNT(*) FROM donasi_masuk")->fetchColumn();
     if ($countDonasi == 0) {

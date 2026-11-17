@@ -1577,3 +1577,523 @@ html.js-reveal-ready .reveal:not(.is-revealed) .progress-fill {
     transition: none !important;
   }
 }
+
+/* ==========================================================================
+   FITUR UPLOAD BUKTI TRANSAKSI & PREVIEW (MOSQERA)
+   ========================================================================== */
+.bukti-upload-container {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.bukti-dropzone {
+  position: relative;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  padding: 24px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.bukti-dropzone * {
+  pointer-events: none;
+}
+
+.bukti-dropzone:hover {
+  border-color: var(--primary);
+  background: var(--primary-subtle);
+  transform: translateY(-1px);
+}
+
+.bukti-dropzone.dragover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: 0 0 0 4px rgba(184, 138, 40, 0.15);
+}
+
+.bukti-dropzone-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.bukti-dropzone:hover .bukti-dropzone-icon {
+  transform: scale(1.08);
+  background: #ffffff;
+  color: var(--accent);
+}
+
+.bukti-dropzone-title {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.96rem;
+  margin-bottom: 4px;
+}
+
+.bukti-dropzone-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.bukti-dropzone-badge {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--bg);
+  color: var(--text-muted);
+  border: 1px solid var(--border-light);
+}
+
+/* Kotak Preview Bukti Saat File Dipilih */
+.bukti-preview-card {
+  background: #ffffff;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.bukti-preview-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #cbd8d4;
+}
+
+.bukti-preview-media {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.bukti-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.bukti-preview-pdf-icon {
+  width: 38px;
+  height: 38px;
+  color: var(--danger);
+}
+
+.bukti-preview-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.bukti-preview-filename {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.bukti-preview-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.bukti-badge-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.bukti-badge-img {
+  background: var(--primary-subtle);
+  color: var(--primary);
+}
+.bukti-badge-pdf {
+  background: #fdf2f2;
+  color: var(--danger);
+}
+
+.bukti-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-bukti-action {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.btn-bukti-action:hover {
+  background: var(--bg);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-bukti-action.remove {
+  color: var(--danger);
+  border-color: #f8d7da;
+  background: #fffafa;
+}
+
+.btn-bukti-action.remove:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #ffffff;
+}
+
+.bukti-error-box {
+  margin-top: 8px;
+  background: #fdf2f2;
+  border: 1px solid #f8d7da;
+  color: var(--danger);
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Badge & Tombol Lihat Bukti di Tabel Transaksi */
+.btn-table-bukti {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--primary-subtle);
+  color: var(--primary);
+  border: 1px solid #cce5e0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-table-bukti:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.btn-table-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-table-detail:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--bg);
+}
+
+.table-bukti-none {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+/* Modal Detail Transaksi & Bukti */
+.modal-transaksi-dialog {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 0;
+  max-width: 640px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(15, 58, 52, 0.32);
+  border: 1px solid rgba(15, 58, 52, 0.1);
+  text-align: left;
+  transform: scale(0.94) translateY(14px);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  position: relative;
+}
+
+.mosqera-modal-backdrop.is-open .modal-transaksi-dialog {
+  transform: scale(1) translateY(0);
+}
+
+.modal-transaksi-header {
+  padding: 18px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+}
+
+.modal-transaksi-title {
+  margin: 0;
+  font-family: 'Amiri', serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.modal-transaksi-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.modal-transaksi-close:hover {
+  background: #e4ece9;
+  color: var(--text-main);
+}
+
+.modal-transaksi-body {
+  padding: 24px;
+}
+
+.transaksi-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.transaksi-detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaksi-detail-item.full {
+  grid-column: 1 / -1;
+}
+
+.transaksi-detail-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.transaksi-detail-value {
+  font-size: 0.98rem;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.transaksi-nominal-highlight {
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.transaksi-bukti-section {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+}
+
+.transaksi-bukti-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.transaksi-bukti-preview-box {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  overflow: hidden;
+}
+
+.transaksi-bukti-image {
+  max-width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  cursor: zoom-in;
+  transition: transform 0.2s ease;
+}
+
+.transaksi-bukti-image:hover {
+  transform: scale(1.01);
+}
+
+.transaksi-bukti-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.modal-transaksi-footer {
+  padding: 14px 24px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+}
+
+/* Lightbox Image Zoom */
+.mosqera-lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  cursor: zoom-out;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.mosqera-lightbox-backdrop.is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mosqera-lightbox-img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  transform: scale(0.96);
+  transition: transform 0.25s ease;
+}
+
+.mosqera-lightbox-backdrop.is-open .mosqera-lightbox-img {
+  transform: scale(1);
+}
+
+/* ==========================================================================
+   FITUR TOGGLE LIHAT KATA SANDI (SHOW / HIDE PASSWORD)
+   ========================================================================== */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrapper .form-input {
+  width: 100%;
+  padding-right: 48px !important;
+}
+
+.btn-toggle-password {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  z-index: 2;
+  user-select: none;
+}
+
+.btn-toggle-password:hover {
+  color: var(--primary);
+  background: var(--primary-subtle);
+}
+
+.btn-toggle-password:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.btn-toggle-password svg {
+  display: block;
+  pointer-events: none;
+}

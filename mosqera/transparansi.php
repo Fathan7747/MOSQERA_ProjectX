@@ -175,17 +175,38 @@ require 'includes/header.php';
             <th>Keterangan / Uraian</th>
             <th>Jenis</th>
             <th style="text-align:right;">Nominal (Rp)</th>
+            <th>Bukti Transaksi</th>
+            <th class="no-print">Detail</th>
           </tr>
         </thead>
         <tbody>
           <?php if (!$daftarTransaksi): ?>
             <tr>
-              <td colspan="5" style="text-align:center; padding:32px; color:var(--text-muted);">
+              <td colspan="7" style="text-align:center; padding:32px; color:var(--text-muted);">
                 Tidak ada data transaksi kas yang sesuai dengan filter yang dipilih.
               </td>
             </tr>
           <?php else: ?>
-            <?php foreach ($daftarTransaksi as $t): ?>
+            <?php foreach ($daftarTransaksi as $t): 
+              $buktiAda = !empty($t['bukti_file']) && file_bukti_tersedia($t['bukti_file']);
+              $buktiUrl = $buktiAda ? url_bukti_transaksi($t['bukti_file']) : '';
+              $isPdf = $buktiAda && is_pdf_bukti($t['bukti_file']);
+              $transaksiJson = json_encode([
+                'id' => $t['id'],
+                'tanggal' => $t['tanggal'],
+                'tanggal_format' => date('d F Y', strtotime($t['tanggal'])),
+                'jenis' => $t['jenis'],
+                'kategori' => $t['kategori'],
+                'judul' => $t['judul'],
+                'nominal' => (float)$t['nominal'],
+                'keterangan' => $t['keterangan'] ?? '',
+                'dibuat_oleh' => $t['dibuat_oleh'] ?? 'Bendahara',
+                'created_at' => !empty($t['created_at']) ? date('d/m/Y H:i', strtotime($t['created_at'])) : '-',
+                'bukti_file' => $t['bukti_file'] ?? '',
+                'bukti_url' => $buktiUrl,
+                'detail_url' => 'detail_transaksi.php?id=' . $t['id']
+              ]);
+            ?>
               <tr>
                 <td style="white-space:nowrap;"><?= date('d/m/Y', strtotime($t['tanggal'])) ?></td>
                 <td><span style="font-weight:600; color:var(--primary);"><?= e($t['kategori']) ?></span></td>
@@ -202,6 +223,26 @@ require 'includes/header.php';
                 </td>
                 <td style="text-align:right; font-weight:700; color:<?= $t['jenis']==='masuk' ? 'var(--success)' : 'var(--danger)' ?>;">
                   <?= $t['jenis']==='masuk' ? '+' : '-' ?> <?= rupiah($t['nominal']) ?>
+                </td>
+                <td>
+                  <?php if ($buktiAda): ?>
+                    <button type="button" class="btn-table-bukti js-btn-detail-transaksi" data-transaksi="<?= e($transaksiJson) ?>" title="Klik untuk memeriksa bukti transaksi">
+                      <?php if ($isPdf): ?>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <span>PDF</span>
+                      <?php else: ?>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <span>Bukti</span>
+                      <?php endif; ?>
+                    </button>
+                  <?php else: ?>
+                    <span class="table-bukti-none">Tanpa Bukti</span>
+                  <?php endif; ?>
+                </td>
+                <td class="no-print">
+                  <a href="detail_transaksi.php?id=<?= $t['id'] ?>" class="btn-table-detail" title="Lihat detail lengkap">
+                    Detail &rarr;
+                  </a>
                 </td>
               </tr>
             <?php endforeach; ?>

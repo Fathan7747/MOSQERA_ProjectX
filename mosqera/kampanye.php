@@ -18,11 +18,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $metode = trim($_POST['metode'] ?? 'QRIS');
     $catatanDoa = trim($_POST['catatan_doa'] ?? '');
 
-    if ($nominal < 10000) {
+    $uploadRes = simpan_bukti_transaksi('bukti_file', 'donasi_');
+    if (!$uploadRes['success']) {
+        $errorMsg = $uploadRes['error'];
+    } elseif ($nominal < 10000) {
         $errorMsg = 'Nominal donasi minimal Rp 10.000.';
     } else {
-        $stmtIns = $db->prepare("INSERT INTO donasi_masuk (kampanye_id, nama_donatur, nominal, metode, catatan_doa, status, tanggal) VALUES (?,?,?,?,?,?,CURDATE())");
-        $stmtIns->execute([$kampanyeId ?: null, $namaDonatur, $nominal, $metode, $catatanDoa, 'Terverifikasi']);
+        $buktiFile = $uploadRes['filename'];
+
+        $stmtIns = $db->prepare("INSERT INTO donasi_masuk (kampanye_id, nama_donatur, nominal, metode, catatan_doa, bukti_file, status, tanggal) VALUES (?,?,?,?,?,?, 'Terverifikasi', CURDATE())");
+        $stmtIns->execute([$kampanyeId ?: null, $namaDonatur, $nominal, $metode, $catatanDoa, $buktiFile ?: null]);
 
         // Update saldo terkumpul kampanye
         if ($kampanyeId > 0) {
@@ -31,11 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
 
         // Catat juga ke transaksi kas masuk
-        $stmtKas = $db->prepare("INSERT INTO transaksi_kas (tanggal, jenis, kategori, judul, nominal, keterangan, dibuat_oleh) VALUES (CURDATE(), 'masuk', 'Donasi Transfer', ?, ?, ?, 'Donasi Online')");
-        $judulKas = 'Donasi Online: ' . ($kampanyeId ? 'Proyek #' . $kampanyeId : 'Infaq Umum') . ' (' . $namaDonatur . ')';
-        $stmtKas->execute([$judulKas, $nominal, $catatanDoa]);
+        $stmtKas = $db->prepare("INSERT INTO transaksi_kas (tanggal, jenis, kategori, judul, nominal, keterangan, bukti_file, dibuat_oleh) VALUES (CURDATE(), 'masuk', 'Donasi Transfer', ?, ?, ?, ?, 'Donasi Online')");
+        $judulKas = 'Donasi Online: ' . ($kampanyeId ? 'Proyek #' . $kampanyeId : 'Infaq Kas Umum') . ' (' . $namaDonatur . ')';
+        $stmtKas->execute([$judulKas, $nominal, $catatanDoa, $buktiFile ?: null]);
 
-        $successMsg = 'Jazakallahu khairan! Donasi Anda sebesar ' . rupiah($nominal) . ' berhasil tercatat. Semoga berkah dan menjadi amal jariyah.';
+        $successMsg = 'Jazakallahu khairan! Donasi Anda sebesar ' . rupiah($nominal) . ' berhasil tercatat' . ($buktiFile ? ' beserta bukti transaksi.' : '.') . ' Semoga berkah dan menjadi amal jariyah.';
     }
 }
 
@@ -135,7 +140,7 @@ require 'includes/header.php';
     <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:36px;" class="form-row">
       
       <!-- Sisi Kiri: Form Input -->
-      <form method="post" data-confirm="Lanjutkan komitmen donasi kebaikan ini untuk program masjid?" data-confirm-title="Konfirmasi Donasi" data-confirm-btn="Lanjutkan" data-confirm-type="primary">
+      <form method="post" enctype="multipart/form-data" data-confirm="Lanjutkan komitmen donasi kebaikan ini untuk program masjid?" data-confirm-title="Konfirmasi Donasi" data-confirm-btn="Lanjutkan" data-confirm-type="primary">
         <input type="hidden" name="action" value="donasi_online">
         <input type="hidden" name="kampanye_id" value="<?= $selectedKampanye ? $selectedKampanye['id'] : 0 ?>">
 
@@ -167,6 +172,15 @@ require 'includes/header.php';
             <option value="Tunai">Penyerahan Tunai Langsung di Sekretariat DKM</option>
           </select>
         </div>
+
+        <!-- UPLOAD BUKTI PEMBAYARAN DONASI -->
+        <?php
+          $fieldLabel = 'Unggah Bukti Transfer / Pembayaran QRIS';
+          $fieldDesc = 'Foto tangkapan layar (screenshot) transfer bank atau struk bukti pembayaran donasi.';
+          $fieldName = 'bukti_file';
+          $fieldId = 'buktiDonasiOnline';
+          include __DIR__ . '/includes/bukti_upload_field.php';
+        ?>
 
         <div class="form-group">
           <label class="form-label">Doa / Pesan Kebaikan (Opsional)</label>
@@ -225,20 +239,55 @@ require 'includes/header.php';
             <th>Untuk Proyek</th>
             <th>Metode</th>
             <th>Doa / Pesan</th>
+            <th>Bukti</th>
             <th style="text-align:right;">Nominal (Rp)</th>
           </tr>
         </thead>
         <tbody>
           <?php if (!$donasiTerbaru): ?>
-            <tr><td colspan="6" style="text-align:center; padding:24px;">Belum ada donasi online tercatat.</td></tr>
+            <tr><td colspan="7" style="text-align:center; padding:24px;">Belum ada donasi online tercatat.</td></tr>
           <?php else: ?>
-            <?php foreach ($donasiTerbaru as $d): ?>
+            <?php foreach ($donasiTerbaru as $d): 
+              $buktiAda = !empty($d['bukti_file']) && file_bukti_tersedia($d['bukti_file']);
+              $buktiUrl = $buktiAda ? url_bukti_transaksi($d['bukti_file']) : '';
+              $isPdf = $buktiAda && is_pdf_bukti($d['bukti_file']);
+              $donasiJson = json_encode([
+                'id' => $d['id'],
+                'tanggal' => $d['tanggal'],
+                'tanggal_format' => date('d F Y', strtotime($d['tanggal'])),
+                'jenis' => 'masuk',
+                'kategori' => 'Donasi / ' . ($d['nama_proyek'] ?? 'Infaq Umum'),
+                'judul' => 'Donasi Online dari ' . $d['nama_donatur'],
+                'nominal' => (float)$d['nominal'],
+                'keterangan' => $d['catatan_doa'] ?? '',
+                'dibuat_oleh' => $d['nama_donatur'],
+                'created_at' => !empty($d['created_at']) ? date('d/m/Y H:i', strtotime($d['created_at'])) : '-',
+                'bukti_file' => $d['bukti_file'] ?? '',
+                'bukti_url' => $buktiUrl,
+                'detail_url' => '#'
+              ]);
+            ?>
               <tr>
                 <td style="white-space:nowrap;"><?= date('d/m/Y', strtotime($d['tanggal'])) ?></td>
                 <td><strong><?= e($d['nama_donatur']) ?></strong></td>
                 <td><span style="font-size:0.85rem; color:var(--primary); font-weight:600;"><?= e($d['nama_proyek'] ?? 'Infaq Umum') ?></span></td>
                 <td><span class="badge-tag" style="background:var(--primary-subtle); color:var(--primary);"><?= e($d['metode']) ?></span></td>
                 <td style="font-size:0.85rem; color:var(--text-muted); font-style:italic;"><?= e($d['catatan_doa'] ?: '-') ?></td>
+                <td>
+                  <?php if ($buktiAda): ?>
+                    <button type="button" class="btn-table-bukti js-btn-detail-transaksi" data-transaksi="<?= e($donasiJson) ?>" title="Lihat bukti donasi">
+                      <?php if ($isPdf): ?>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        <span>PDF</span>
+                      <?php else: ?>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <span>Bukti</span>
+                      <?php endif; ?>
+                    </button>
+                  <?php else: ?>
+                    <span class="table-bukti-none">-</span>
+                  <?php endif; ?>
+                </td>
                 <td style="text-align:right; font-weight:700; color:var(--success);"><?= rupiah($d['nominal']) ?></td>
               </tr>
             <?php endforeach; ?>

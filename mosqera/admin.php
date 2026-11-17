@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $title = 'Portal Pengurus & Admin';
 $page = 'admin';
 require_once 'config.php';
@@ -36,12 +36,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $keterangan = trim($_POST['keterangan'] ?? '');
     $pencatat = $user['nama'];
 
-    if (empty($judul) || $nominal <= 0) {
+    $uploadRes = simpan_bukti_transaksi('bukti_file', 'kas_masuk_');
+    if (!$uploadRes['success']) {
+        $err = $uploadRes['error'];
+    } elseif (empty($judul) || $nominal <= 0) {
         $err = 'Mohon isi uraian pemasukan dan nominal yang valid.';
     } else {
-        $ins = $db->prepare("INSERT INTO transaksi_kas (tanggal, jenis, kategori, judul, nominal, keterangan, dibuat_oleh) VALUES (?, 'masuk', ?, ?, ?, ?, ?)");
-        $ins->execute([$tanggal, $kategori, $judul, $nominal, $keterangan, $pencatat]);
-        $msg = 'Uang masuk sebesar ' . rupiah($nominal) . ' berhasil dicatat.';
+        $buktiFile = $uploadRes['filename'];
+        $ins = $db->prepare("INSERT INTO transaksi_kas (tanggal, jenis, kategori, judul, nominal, keterangan, bukti_file, dibuat_oleh) VALUES (?, 'masuk', ?, ?, ?, ?, ?, ?)");
+        $ins->execute([$tanggal, $kategori, $judul, $nominal, $keterangan, $buktiFile ?: null, $pencatat]);
+        $msg = 'Uang masuk sebesar ' . rupiah($nominal) . ' berhasil dicatat' . ($buktiFile ? ' beserta bukti transaksi.' : '.');
     }
 }
 
@@ -52,15 +56,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $judul = trim($_POST['judul'] ?? '');
     $nominal = floatval($_POST['nominal'] ?? 0);
     $keterangan = trim($_POST['keterangan'] ?? '');
-    $buktiNota = trim($_POST['bukti_nota'] ?? '');
     $pencatat = $user['nama'];
 
-    if (empty($judul) || $nominal <= 0) {
+    $uploadRes = simpan_bukti_transaksi('bukti_file', 'kas_keluar_');
+    if (!$uploadRes['success']) {
+        $err = $uploadRes['error'];
+    } elseif (empty($judul) || $nominal <= 0) {
         $err = 'Mohon isi uraian pengeluaran dan nominal yang valid.';
     } else {
-        $ins = $db->prepare("INSERT INTO transaksi_kas (tanggal, jenis, kategori, judul, nominal, keterangan, bukti_nota, dibuat_oleh) VALUES (?, 'keluar', ?, ?, ?, ?, ?, ?)");
-        $ins->execute([$tanggal, $kategori, $judul, $nominal, $keterangan, $buktiNota, $pencatat]);
-        $msg = 'Pengeluaran kas sebesar ' . rupiah($nominal) . ' berhasil dicatat.';
+        $buktiFile = $uploadRes['filename'];
+        $ins = $db->prepare("INSERT INTO transaksi_kas (tanggal, jenis, kategori, judul, nominal, keterangan, bukti_file, dibuat_oleh) VALUES (?, 'keluar', ?, ?, ?, ?, ?, ?)");
+        $ins->execute([$tanggal, $kategori, $judul, $nominal, $keterangan, $buktiFile ?: null, $pencatat]);
+        $msg = 'Pengeluaran kas sebesar ' . rupiah($nominal) . ' berhasil dicatat' . ($buktiFile ? ' beserta lampiran bukti nota.' : '.');
     }
 }
 
@@ -68,9 +75,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'hapus_transaksi') {
     $id = intval($_POST['id'] ?? 0);
     if ($id > 0) {
+        // Ambil data bukti sebelum transaksi dihapus
+        $rowDel = $db->prepare("SELECT bukti_file FROM transaksi_kas WHERE id=?");
+        $rowDel->execute([$id]);
+        $rowData = $rowDel->fetch();
         $del = $db->prepare("DELETE FROM transaksi_kas WHERE id=?");
         $del->execute([$id]);
+        // Hapus file fisik jika ada
+        if (!empty($rowData['bukti_file'])) {
+            hapus_bukti_transaksi($rowData['bukti_file']);
+        }
         $msg = 'Transaksi kas berhasil dihapus dari pembukuan.';
+    }
+}
+
+// Catat Penerimaan Donasi Langsung Pengurus
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'catat_donasi_admin') {
+    $namaDonatur = trim($_POST['nama_donatur'] ?? '');
+    $nominal = floatval($_POST['nominal'] ?? 0);
+    $kampanyeId = intval($_POST['kampanye_id'] ?? 0);
+    $metode = trim($_POST['metode'] ?? 'Tunai');
+    $catatanDoa = trim($_POST['catatan_doa'] ?? '');
+    $tanggal = trim($_POST['tanggal'] ?? date('Y-m-d'));
+    $catatKeKas = isset($_POST['catat_ke_kas']) ? 1 : 0;
+
+    $uploadRes = simpan_bukti_transaksi('bukti_file', 'donasi_admin_');
+    if (!$uploadRes['success']) {
+        $err = $uploadRes['error'];
+    } elseif (empty($namaDonatur) || $nominal <= 0) {
+        $err = 'Mohon lengkapi nama donatur dan nominal donasi dengan benar.';
+    } else {
+        $buktiFile = $uploadRes['filename'];
+        $stmtDonasi = $db->prepare("INSERT INTO donasi_masuk (kampanye_id, nama_donatur, nominal, metode, catatan_doa, bukti_file, status, tanggal) VALUES (?, ?, ?, ?, ?, ?, 'Terverifikasi', ?)");
+        $stmtDonasi->execute([$kampanyeId ?: null, $namaDonatur, $nominal, $metode, $catatanDoa, $buktiFile ?: null, $tanggal]);
+
+        if ($kampanyeId > 0) {
+            $upd = $db->prepare("UPDATE kampanye_donasi SET terkumpul = terkumpul + ? WHERE id=?");
+            $upd->execute([$nominal, $kampanyeId]);
+        }
+
+        if ($catatKeKas) {
+            $judulKas = 'Penerimaan Donasi: ' . ($kampanyeId ? 'Kampanye #' . $kampanyeId : 'Infaq Kas Umum') . ' (' . $namaDonatur . ')';
+            $stmtKas = $db->prepare("INSERT INTO transaksi_kas (tanggal, jenis, kategori, judul, nominal, keterangan, bukti_file, dibuat_oleh) VALUES (?, 'masuk', 'Donasi Transfer', ?, ?, ?, ?, ?)");
+            $stmtKas->execute([$tanggal, $judulKas, $nominal, $catatanDoa ?: 'Diterima langsung oleh ' . $user['nama'], $buktiFile ?: null, $user['nama']]);
+        }
+
+        $msg = 'Penerimaan donasi dari ' . $namaDonatur . ' sebesar ' . rupiah($nominal) . ' berhasil dicatat' . ($buktiFile ? ' dengan bukti pembayaran.' : '.');
     }
 }
 
@@ -430,7 +480,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
       <?php if ($aksiForm === 'masuk'): ?>
         <!-- FORM CATAT UANG MASUK -->
         <h3 style="font-size:1.3rem; margin-bottom:16px; color:var(--success);">Catat Uang Masuk Baru</h3>
-        <form method="post" data-confirm="Simpan catatan uang masuk ini ke dalam buku kas masjid?" data-confirm-title="Simpan Uang Masuk" data-confirm-btn="Simpan" data-confirm-type="success">
+        <form method="post" enctype="multipart/form-data" data-confirm="Simpan catatan uang masuk ini ke dalam buku kas masjid?" data-confirm-title="Simpan Uang Masuk" data-confirm-btn="Simpan" data-confirm-type="success">
           <input type="hidden" name="action" value="tambah_uang_masuk">
 
           <div class="form-row">
@@ -468,6 +518,15 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
             <input type="text" name="keterangan" class="form-input" placeholder="Catatan saksi perhitungan atau rincian donatur...">
           </div>
 
+          <!-- UPLOAD BUKTI TRANSAKSI UANG MASUK -->
+          <?php
+            $fieldLabel = 'Bukti Transaksi Pemasukan (Foto / Struk)';
+            $fieldDesc = 'Unggah foto struk transfer, kuitansi infaq, atau tanda terima donatur.';
+            $fieldName = 'bukti_file';
+            $fieldId = 'buktiUploadMasuk';
+            include __DIR__ . '/includes/bukti_upload_field.php';
+          ?>
+
           <button type="submit" class="btn btn-primary" style="padding:14px 28px; font-size:1.05rem; background:#198754; border-color:#198754;">
             Simpan Uang Masuk
           </button>
@@ -476,7 +535,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
       <?php else: ?>
         <!-- FORM CATAT UANG KELUAR -->
         <h3 style="font-size:1.3rem; margin-bottom:16px; color:var(--danger);">Catat Uang Keluar Baru</h3>
-        <form method="post" data-confirm="Catat pengeluaran kas ini? Pastikan bukti belanja fisik sudah diverifikasi." data-confirm-title="Catat Uang Keluar" data-confirm-btn="Simpan" data-confirm-type="danger">
+        <form method="post" enctype="multipart/form-data" data-confirm="Catat pengeluaran kas ini? Pastikan bukti belanja fisik sudah diverifikasi." data-confirm-title="Catat Uang Keluar" data-confirm-btn="Simpan" data-confirm-type="danger">
           <input type="hidden" name="action" value="catat_uang_keluar">
 
           <div class="form-row">
@@ -514,6 +573,15 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
             <textarea name="keterangan" class="form-textarea" rows="2" placeholder="Nomor nota bukti belanja fisik yang disimpan di map bendahara..."></textarea>
           </div>
 
+          <!-- UPLOAD BUKTI TRANSAKSI UANG KELUAR -->
+          <?php
+            $fieldLabel = 'Unggah Bukti Nota / Kuitansi Belanja';
+            $fieldDesc = 'Foto nota toko, kuitansi resmi, struk belanja kas, atau invoice operasional.';
+            $fieldName = 'bukti_file';
+            $fieldId = 'buktiUploadKeluar';
+            include __DIR__ . '/includes/bukti_upload_field.php';
+          ?>
+
           <button type="submit" class="btn btn-primary" style="padding:14px 28px; font-size:1.05rem; background:#b02a37; border-color:#b02a37;">
             Simpan Uang Keluar
           </button>
@@ -546,15 +614,35 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
               <th>Uraian / Keterangan</th>
               <th>Jenis</th>
               <th style="text-align:right;">Nominal</th>
+              <th>Bukti</th>
               <th>Pencatat</th>
               <th class="no-print">Aksi</th>
             </tr>
           </thead>
           <tbody>
             <?php if (!$listKas): ?>
-              <tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">Belum ada data pada periode ini.</td></tr>
+              <tr><td colspan="8" style="text-align:center; padding:24px; color:var(--text-muted);">Belum ada data pada periode ini.</td></tr>
             <?php else: ?>
-              <?php foreach ($listKas as $row): ?>
+              <?php foreach ($listKas as $row): 
+                $buktiAda = !empty($row['bukti_file']) && file_bukti_tersedia($row['bukti_file']);
+                $buktiUrl = $buktiAda ? url_bukti_transaksi($row['bukti_file']) : '';
+                $isPdf = $buktiAda && is_pdf_bukti($row['bukti_file']);
+                $dataJson = json_encode([
+                  'id' => $row['id'],
+                  'tanggal' => $row['tanggal'],
+                  'tanggal_format' => date('d F Y', strtotime($row['tanggal'])),
+                  'jenis' => $row['jenis'],
+                  'kategori' => $row['kategori'],
+                  'judul' => $row['judul'],
+                  'nominal' => (float)$row['nominal'],
+                  'keterangan' => $row['keterangan'] ?? '',
+                  'dibuat_oleh' => $row['dibuat_oleh'] ?? 'Bendahara',
+                  'created_at' => !empty($row['created_at']) ? date('d/m/Y H:i', strtotime($row['created_at'])) : '-',
+                  'bukti_file' => $row['bukti_file'] ?? '',
+                  'bukti_url' => $buktiUrl,
+                  'detail_url' => 'detail_transaksi.php?id=' . $row['id']
+                ]);
+              ?>
                 <tr>
                   <td style="white-space:nowrap;"><?= date('d/m/Y', strtotime($row['tanggal'])) ?></td>
                   <td><strong><?= e($row['kategori']) ?></strong></td>
@@ -572,9 +660,27 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
                   <td style="text-align:right; font-weight:700; color:<?= $row['jenis']==='masuk'?'var(--success)':'var(--danger)' ?>;">
                     <?= $row['jenis']==='masuk'?'+':'-' ?> <?= rupiah($row['nominal']) ?>
                   </td>
+                  <td>
+                    <?php if ($buktiAda): ?>
+                      <button type="button" class="btn-table-bukti js-btn-detail-transaksi" data-transaksi="<?= e($dataJson) ?>" title="Klik untuk melihat bukti transaksi">
+                        <?php if ($isPdf): ?>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                          <span>PDF</span>
+                        <?php else: ?>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                          <span>Bukti</span>
+                        <?php endif; ?>
+                      </button>
+                    <?php else: ?>
+                      <span class="table-bukti-none">Tanpa Bukti</span>
+                    <?php endif; ?>
+                  </td>
                   <td style="font-size:0.82rem; color:var(--text-muted);"><?= e($row['dibuat_oleh']) ?></td>
-                  <td class="no-print">
-                    <form method="post" style="display:inline;" data-confirm="Apakah Anda yakin ingin menghapus catatan transaksi ini? Data yang dihapus tidak dapat dipulihkan." data-confirm-title="Hapus Catatan Kas" data-confirm-btn="Hapus" data-confirm-type="danger">
+                  <td class="no-print" style="white-space:nowrap;">
+                    <button type="button" class="btn-table-detail js-btn-detail-transaksi" data-transaksi="<?= e($dataJson) ?>" title="Lihat rincian lengkap transaksi">
+                      Detail
+                    </button>
+                    <form method="post" style="display:inline; margin-left:4px;" data-confirm="Apakah Anda yakin ingin menghapus catatan transaksi ini? Data dan file bukti yang dihapus tidak dapat dipulihkan." data-confirm-title="Hapus Catatan Kas" data-confirm-btn="Hapus" data-confirm-type="danger">
                       <input type="hidden" name="action" value="hapus_transaksi">
                       <input type="hidden" name="id" value="<?= $row['id'] ?>">
                       <button type="submit" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.85rem; font-weight:600; text-decoration:underline;">Hapus</button>
@@ -687,6 +793,77 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
       </div>
     </div>
 
+    <!-- FORM CATAT PENERIMAAN DONASI LANGSUNG -->
+    <div class="card" style="margin-top:24px;">
+      <h3 style="font-size:1.25rem; margin-bottom:16px;">Catat Penerimaan Donasi Langsung (Offline / Donatur Datang)</h3>
+      <form method="post" enctype="multipart/form-data" data-confirm="Simpan catatan penerimaan donasi kebaikan ini?" data-confirm-title="Simpan Penerimaan Donasi" data-confirm-btn="Simpan" data-confirm-type="primary">
+        <input type="hidden" name="action" value="catat_donasi_admin">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tanggal Penerimaan</label>
+            <input type="date" name="tanggal" class="form-input" value="<?= date('Y-m-d') ?>" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Nominal Donasi (Rp)</label>
+            <input type="number" name="nominal" class="form-input" placeholder="Contoh: 500000" min="10000" step="5000" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nama Donatur / Keluarga</label>
+            <input type="text" name="nama_donatur" class="form-input" placeholder="Contoh: Hamba Allah / Bpk. Sutrisno" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Alokasi Program Kampanye</label>
+            <select name="kampanye_id" class="form-select">
+              <option value="0">Infaq Kas Umum Masjid</option>
+              <?php foreach ($listKamp as $kp): ?>
+                <option value="<?= $kp['id'] ?>"><?= e($kp['judul']) ?> (<?= e($kp['kategori']) ?>)</option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Metode Pembayaran</label>
+            <select name="metode" class="form-select" required>
+              <option value="Tunai">Tunai / Penyerahan Langsung</option>
+              <option value="Transfer Bank">Transfer Rekening Bank BSI</option>
+              <option value="QRIS">QRIS Standar Nasional</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Doa / Niat Kebaikan (Opsional)</label>
+            <input type="text" name="catatan_doa" class="form-input" placeholder="Niat sedekah jariyah atau doa keluarga...">
+          </div>
+        </div>
+
+        <!-- UPLOAD BUKTI DONASI -->
+        <?php
+          $fieldLabel = 'Unggah Bukti Transaksi Donasi (Kuitansi / Struk Transfer)';
+          $fieldDesc = 'Foto kuitansi penyerahan tunai, bukti transfer bank, atau struk pembayaran donatur.';
+          $fieldName = 'bukti_file';
+          $fieldId = 'buktiUploadDonasiAdmin';
+          include __DIR__ . '/includes/bukti_upload_field.php';
+        ?>
+
+        <div class="form-group">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.92rem;">
+            <input type="checkbox" name="catat_ke_kas" value="1" checked>
+            <span>Otomatis catat juga sebagai uang masuk ke Buku Kas Masjid</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="padding:12px 24px;">Simpan Catatan Donasi</button>
+      </form>
+    </div>
+
     <!-- VERIFIKASI DANA MASUK & DAFTAR DONATUR -->
     <div class="card" style="margin-top:24px;">
       <h3 style="font-size:1.25rem; margin-bottom:16px;">Verifikasi Dana Masuk & Daftar Donatur</h3>
@@ -699,6 +876,7 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
               <th>Kampanye Tujuan</th>
               <th>Metode</th>
               <th style="text-align:right;">Nominal</th>
+              <th>Bukti Transfer</th>
               <th>Doa / Catatan</th>
               <th>Status</th>
               <th>Aksi</th>
@@ -706,15 +884,49 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
           </thead>
           <tbody>
             <?php if (!$listDonatur): ?>
-              <tr><td colspan="8" style="text-align:center; padding:20px;">Belum ada catatan donatur masuk.</td></tr>
+              <tr><td colspan="9" style="text-align:center; padding:20px;">Belum ada catatan donatur masuk.</td></tr>
             <?php else: ?>
-              <?php foreach ($listDonatur as $d): ?>
+              <?php foreach ($listDonatur as $d): 
+                $buktiAda = !empty($d['bukti_file']) && file_bukti_tersedia($d['bukti_file']);
+                $buktiUrl = $buktiAda ? url_bukti_transaksi($d['bukti_file']) : '';
+                $isPdf = $buktiAda && is_pdf_bukti($d['bukti_file']);
+                $donasiDataJson = json_encode([
+                  'id' => $d['id'],
+                  'tanggal' => $d['tanggal'],
+                  'tanggal_format' => date('d F Y', strtotime($d['tanggal'])),
+                  'jenis' => 'masuk',
+                  'kategori' => 'Donasi / ' . ($d['nama_kampanye'] ?? 'Infaq Umum'),
+                  'judul' => 'Donasi dari ' . $d['nama_donatur'] . ' (' . $d['metode'] . ')',
+                  'nominal' => (float)$d['nominal'],
+                  'keterangan' => $d['catatan_doa'] ?? '',
+                  'dibuat_oleh' => 'Donatur (' . $d['nama_donatur'] . ')',
+                  'created_at' => !empty($d['created_at']) ? date('d/m/Y H:i', strtotime($d['created_at'])) : '-',
+                  'bukti_file' => $d['bukti_file'] ?? '',
+                  'bukti_url' => $buktiUrl,
+                  'detail_url' => '#'
+                ]);
+              ?>
                 <tr>
-                  <td><?= date('d/m/Y', strtotime($d['tanggal'])) ?></td>
+                  <td style="white-space:nowrap;"><?= date('d/m/Y', strtotime($d['tanggal'])) ?></td>
                   <td><strong><?= e($d['nama_donatur']) ?></strong></td>
                   <td><span style="font-size:0.85rem; color:var(--primary);"><?= e($d['nama_kampanye'] ?? 'Infaq Umum') ?></span></td>
                   <td><?= e($d['metode']) ?></td>
                   <td style="text-align:right; font-weight:700; color:var(--success);"><?= rupiah($d['nominal']) ?></td>
+                  <td>
+                    <?php if ($buktiAda): ?>
+                      <button type="button" class="btn-table-bukti js-btn-detail-transaksi" data-transaksi="<?= e($donasiDataJson) ?>" title="Lihat bukti transfer donatur">
+                        <?php if ($isPdf): ?>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                          <span>PDF</span>
+                        <?php else: ?>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                          <span>Bukti</span>
+                        <?php endif; ?>
+                      </button>
+                    <?php else: ?>
+                      <span class="table-bukti-none">Tanpa Bukti</span>
+                    <?php endif; ?>
+                  </td>
                   <td style="font-size:0.82rem; color:var(--text-muted); max-width:200px;"><?= e($d['catatan_doa'] ?: '-') ?></td>
                   <td>
                     <span class="badge-tag <?= $d['status']==='Terverifikasi'?'badge-masuk':'badge-keluar' ?>"><?= e($d['status']) ?></span>
@@ -953,6 +1165,6 @@ $qrisLabel = pengaturan($db, 'qris_label', "QRIS Standar Pembayaran Nasional (NM
   </div>
 </footer>
 
-<script src="assets/js/app.js"></script>
+<script src="assets/js/app.js?v=<?= file_exists(__DIR__ . '/assets/js/app.js') ? filemtime(__DIR__ . '/assets/js/app.js') : time() ?>"></script>
 </body>
 </html>
