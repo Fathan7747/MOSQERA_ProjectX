@@ -1,0 +1,21 @@
+<?php
+$alamatMasjid = pengaturan($db, 'alamat', "Jl. Jend. Sudirman No.70, Rembiga, Kec. Selaparang, Kota Mataram");
+$kontakMasjid = pengaturan($db, 'telepon', "0812-3456-7890");
+$namaMasjid = pengaturan($db, 'nama_masjid', "MASJID BAITURRAHIM");
+?>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <strong style="color:#ffffff; font-size:1.05rem;"><?= e($namaMasjid) ?></strong>
+      <p style="margin:4px 0 0; color:rgba(255,255,255,0.85);"><?= e($alamatMasjid) ?>  </p>
+    </div>
+    <div style="text-align:right;">
+      <p style="margin:0; color:rgba(255,255,255,0.9); font-weight:500;">Sistem Informasi & Tata Kelola Keuangan Masjid Transparan</p>
+      <small style="color:rgba(255,255,255,0.65);">&copy; <?= date('Y') ?> MOSQERA</small>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/app.js?v=<?= file_exists(__DIR__ . '/../assets/js/app.js') ? filemtime(__DIR__ . '/../assets/js/app.js') : time() ?>"></script>
+</body>
+</html>
